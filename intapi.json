@@ -1,0 +1,292 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "version": "1.0.0",
+    "title": "[INTAPI] Loqr Integration API",
+    "description": "This API defines the events operations needed to integrate with LOQR product Suite\n\nThis API aims to transfer the minimum amount of data.\nThe main goal is to notify by events of state changes or important milestones of the LOQR Product process\n",
+    "termsOfService": "https://loqr.io/terms/",
+    "license": {
+      "name": "Loqr - All Rights Reserved",
+      "url": "https://loqr.io"
+    },
+    "contact": {
+      "name": "Loqr",
+      "url": "https://loqr.io",
+      "email": "info@loqr.io"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api-de.cluster.loqr.io/integration/v2",
+      "description": "Staging Environment"
+    }
+  ],
+  "paths": {
+    "/tenant/{tenantId}/event": {
+      "post": {
+        "tags": [
+          "event"
+        ],
+        "operationId": "eventPublish",
+        "summary": "Receives an event notifying that something have changed in the given process",
+        "description": "Receives an event notifying that something have changed in the given process\n\nIt includes\n- __eventId__ for facilitating tracking and debuging\n- __eventType__ for identifying the type of the event\n- __eventVersion__ to facilitate to evolve the event data without having to break the contracts\n- __eventTime__ for facilitating tracking and debuging\n- __data__ the event data necessary to perform the actions needed when receiving the event. This field could be empty and/or change for each eventType \n",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "description": "Tenant ID, the Tenant unique number for the client. Should be a number of 5 digits.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/Event"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/EventResponse"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestMessage"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedMessage"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenMessage"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundMessage"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorMessage"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "requestBodies": {
+      "Event": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Event"
+            }
+          }
+        },
+        "required": true
+      }
+    },
+    "responses": {
+      "EventResponse": {
+        "description": "Event Response Message\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/EventResponse"
+            }
+          }
+        }
+      },
+      "BadRequestMessage": {
+        "description": "Bad Request\n- Check Loqr Developer Portal for more detailed information\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ResponseStateStatus"
+            }
+          }
+        }
+      },
+      "UnauthorizedMessage": {
+        "description": "Unauthorized\n - Check Loqr Developer Portal for more detailed information\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ResponseStateStatus"
+            }
+          }
+        }
+      },
+      "ForbiddenMessage": {
+        "description": "Forbidden\n - Check Loqr Developer Portal for more detailed information\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ResponseStateStatus"
+            }
+          }
+        }
+      },
+      "NotFoundMessage": {
+        "description": "Not Found\n- Check Loqr Developer Portal for more detailed information\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ResponseStateStatus"
+            }
+          }
+        }
+      },
+      "InternalServerErrorMessage": {
+        "description": "Internal Server Error\n- Check Loqr Developer Portal for more detailed information\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ResponseStateStatus"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "StatusCode": {
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object",
+        "description": "Status object of a operation.",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "status code of the operation."
+          },
+          "message": {
+            "type": "string",
+            "description": "message related to the status code giving more context to the Status Code."
+          }
+        }
+      },
+      "ResponseStateStatus": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "description": "The code of the operation. Ex- 200 OK",
+            "example": 200
+          },
+          "statusCodes": {
+            "type": "array",
+            "description": "A list of status codes of the operation. Isn't mandatory",
+            "items": {
+              "$ref": "#/components/schemas/StatusCode"
+            }
+          }
+        }
+      },
+      "ExtraProperty": {
+        "required": [
+          "key",
+          "value"
+        ],
+        "type": "object",
+        "description": "Contains the extra properties of the header. Should be used when is needed to add more properties that are not statecally defined in the header object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "The unique ID of a property."
+          },
+          "value": {
+            "type": "string",
+            "description": "The value of the unique ID."
+          }
+        }
+      },
+      "Header": {
+        "type": "object",
+        "description": "Header of the message containing context information of the request or response",
+        "properties": {
+          "correlationId": {
+            "type": "string",
+            "description": "The unique ID of a group of transactions. Used for debuging and traceability. When using HTTP this field should not be used and send it as a HTTP Header instead."
+          },
+          "traceID": {
+            "type": "string",
+            "description": "The unique ID of a transaction. Used for debuging and traceability. When using HTTP this field should not be used and send it as a HTTP Header instead."
+          },
+          "JWT": {
+            "type": "string",
+            "description": "The authentication token in JWT format. When using HTTP this field should not be used and pass a HTTP Header instead."
+          },
+          "extraProperties": {
+            "type": "array",
+            "description": "Extra propoerties that are not hardly mapped on the object",
+            "items": {
+              "$ref": "#/components/schemas/ExtraProperty"
+            }
+          }
+        }
+      },
+      "EventResponse": {
+        "type": "object",
+        "description": "Publish Event response, if all hapens as expected is not mandatory",
+        "properties": {
+          "header": {
+            "$ref": "#/components/schemas/Header"
+          },
+          "responseStatus": {
+            "$ref": "#/components/schemas/ResponseStateStatus"
+          }
+        }
+      },
+      "Event": {
+        "type": "object",
+        "description": "Object that represents the event structure",
+        "required": [
+          "payload"
+        ],
+        "properties": {
+          "header": {
+            "$ref": "#/components/schemas/Header"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/EventData"
+          }
+        }
+      },
+      "EventData": {
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "format": "UUID",
+            "description": "Event unique identifier for facilitating tracking and debuging.",
+            "example": 1234566
+          },
+          "eventType": {
+            "type": "string",
+            "description": "eventType that identifies the event",
+            "example": "PROCESS_COMPLETED"
+          },
+          "eventVersion": {
+            "type": "string",
+            "description": "Default is 1.0. Used to for facilitating tracking and debuging",
+            "example": "1.0"
+          },
+          "eventTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Event generation date/time",
+            "example": "08/06/2019 23:01:01.001Z"
+          },
+          "data": {
+            "type": "object",
+            "description": "the event data necessary to perform the actions needed when receiving the event. This field could be empty and/or change for each eventType"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "event",
+      "description": "Event related routes"
+    }
+  ]
+}
