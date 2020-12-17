@@ -1,0 +1,1059 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "version": "1.0.0",
+    "title": "Loqr SignID API",
+    "description": "This API supports all the operations supported by Loqr's SignID product.\n---\n",
+    "termsOfService": "https://loqr.io/terms/",
+    "license": {
+      "name": "Loqr - All Rights Reserved",
+      "url": "https://loqr.io"
+    },
+    "contact": {
+      "name": "Loqr",
+      "url": "https://loqr.io",
+      "email": "info@loqr.io"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api-de.cluster.loqr.io/sign/v2",
+      "description": "Staging Environment"
+    }
+  ],
+  "paths": {
+    "/tenant/{tenantId}/process": {
+      "post": {
+        "tags": [
+          "process"
+        ],
+        "operationId": "createProcess",
+        "summary": "Create a new signature process",
+        "description": "Create a new signature process\n\n---\n__Notes:__\n\n  * The creation of a new signature process triggers the creation of an identity, that is automatically binded to the process\n",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "description": "Tenant ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/ProcessDataMessage"
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/ProcessCreated"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestMessage"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedMessage"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenMessage"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundMessage"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorMessage"
+          }
+        }
+      }
+    },
+    "/tenant/{tenantId}/process/{processId}": {
+      "put": {
+        "tags": [
+          "process"
+        ],
+        "operationId": "updateProcessData",
+        "summary": "Update the data associated to a signature process",
+        "description": "Update the data associated to a signature process\n",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "description": "Tenant ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "processId",
+            "in": "path",
+            "description": "Process ID of the signature",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/ProcessData"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ProcessUpdated"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestMessage"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedMessage"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenMessage"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundMessage"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorMessage"
+          }
+        }
+      }
+    },
+    "/tenant/{tenantId}/process/{processId}/state": {
+      "get": {
+        "tags": [
+          "process"
+        ],
+        "operationId": "getProcessStaet",
+        "summary": "Obtain a process state",
+        "description": "Obtain a process state\n",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "description": "Tenant ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "processId",
+            "in": "path",
+            "description": "ProcessId ID of the related process",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ProcessStateMessage"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestMessage"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedMessage"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenMessage"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundMessage"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorMessage"
+          }
+        }
+      }
+    },
+    "/tenant/{tenantId}/process/{processId}/document/binary": {
+      "post": {
+        "tags": [
+          "process"
+        ],
+        "operationId": "attachProcessDocumentBinary",
+        "summary": "Attach a document to a given signature process by binary upload",
+        "description": "Attach a document to a signature process by binary upload\n",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "description": "Tenant ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "processId",
+            "in": "path",
+            "description": "Process ID of the related identity",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/DocumentDataMessage"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/AttachDocumentResponseMessage"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestMessage"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedMessage"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenMessage"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundMessage"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorMessage"
+          }
+        }
+      }
+    },
+    "/tenant/{tenantId}/process/{processId}/document": {
+      "get": {
+        "tags": [
+          "process"
+        ],
+        "operationId": "getProcessDocumentByQuery",
+        "summary": "Obtain a process document binary that matches a given query",
+        "description": "Obtain a process document binary that matches a given query\n",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "description": "Tenant ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "processId",
+            "in": "path",
+            "description": "ProcessId ID of the related process",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "docType",
+            "in": "query",
+            "description": "Type of the document to be returned",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/*": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestMessage"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedMessage"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenMessage"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundMessage"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorMessage"
+          }
+        }
+      }
+    },
+    "/tenant/{tenantId}/identity/{identityId}": {
+      "put": {
+        "tags": [
+          "identity"
+        ],
+        "operationId": "updateIdentityData",
+        "summary": "Update the data associated to a given signature process",
+        "description": "Update the data associated to a given signature process\n",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "description": "Tenant ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "identityId",
+            "in": "path",
+            "description": "Identity ID of the related identity",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/IdentityData"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/IdentityUpdated"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestMessage"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedMessage"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenMessage"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundMessage"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorMessage"
+          }
+        }
+      }
+    },
+    "/tenant/{tenantId}/identity/{identityId}/document/binary": {
+      "post": {
+        "tags": [
+          "identity"
+        ],
+        "operationId": "attachIdentityDocumentBinary",
+        "summary": "Attach a document to a given signature process by binary upload",
+        "description": "Attach a document to a given signature process by binary upload\n",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "description": "Tenant ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "identityId",
+            "in": "path",
+            "description": "Identity ID of the related identity",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/DocumentDataMessage"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/AttachDocumentResponseMessage"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestMessage"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedMessage"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenMessage"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundMessage"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorMessage"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "responses": {
+      "BadRequestMessage": {
+        "description": "Bad Request\n- Check Loqr Developer Portal for more detailed information\n"
+      },
+      "UnauthorizedMessage": {
+        "description": "Unauthorized\n - Check Loqr Developer Portal for more detailed information\n"
+      },
+      "ForbiddenMessage": {
+        "description": "Forbidden\n - Check Loqr Developer Portal for more detailed information\n"
+      },
+      "NotFoundMessage": {
+        "description": "Not Found\n- Check Loqr Developer Portal for more detailed information\n"
+      },
+      "InternalServerErrorMessage": {
+        "description": "Internal Server Error\n- Check Loqr Developer Portal for more detailed information\n"
+      },
+      "ProcessCreated": {
+        "description": "Process Created with Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProcessCreated"
+            }
+          }
+        }
+      },
+      "IdentityUpdated": {
+        "description": "Identity Updated with Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/IdentityUpdated"
+            }
+          }
+        }
+      },
+      "ProcessUpdated": {
+        "description": "Process Updated with Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProcessUpdated"
+            }
+          }
+        }
+      },
+      "ProcessStateMessage": {
+        "description": "Process Response Message",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProcessStateResponse"
+            }
+          }
+        }
+      },
+      "ProcessFinished": {
+        "description": "Process Finished with Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProcessFinished"
+            }
+          }
+        }
+      },
+      "IdentityResponse": {
+        "description": "Identitity Response Message",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/IdentityResponse"
+            }
+          }
+        }
+      },
+      "AttachDocumentResponseMessage": {
+        "description": "Attachement Document Response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/AttachDocumentResponseMessage"
+            }
+          }
+        }
+      }
+    },
+    "requestBodies": {
+      "IdentityData": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/IdentityData"
+            }
+          }
+        },
+        "required": true
+      },
+      "ProcessData": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProcessData"
+            }
+          }
+        },
+        "required": true
+      },
+      "ProcessDataMessage": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProcessDataMessage"
+            }
+          }
+        },
+        "required": true
+      },
+      "DocumentDataMessage": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/DocumentDataMessage"
+            }
+          }
+        },
+        "description": "Document contents and metadata",
+        "required": true
+      }
+    },
+    "schemas": {
+      "StatusCode": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "status code"
+          },
+          "message": {
+            "type": "string",
+            "description": "message related to the status code"
+          }
+        }
+      },
+      "ResponseStateStatus": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "example": 200
+          },
+          "statusCodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatusCode"
+            }
+          }
+        }
+      },
+      "ExtraProperty": {
+        "required": [
+          "key",
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "The unique ID of a property."
+          },
+          "value": {
+            "type": "string",
+            "description": "The value of the unioque ID."
+          }
+        }
+      },
+      "Header": {
+        "type": "object",
+        "properties": {
+          "correlationId": {
+            "type": "string",
+            "description": "The unique ID of a group of transactions"
+          },
+          "traceID": {
+            "type": "string",
+            "description": "The unique ID of a transaction"
+          },
+          "JWT": {
+            "type": "string",
+            "description": "The authentication token"
+          },
+          "extraProperties": {
+            "type": "array",
+            "description": "Extra propoerties that are not hardly mapped on the object",
+            "items": {
+              "$ref": "#/components/schemas/ExtraProperty"
+            }
+          }
+        }
+      },
+      "ProcessCreated": {
+        "type": "object",
+        "properties": {
+          "header": {
+            "$ref": "#/components/schemas/Header"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/ProcessCreatedPayload"
+          },
+          "responseStatus": {
+            "$ref": "#/components/schemas/ResponseStateStatus"
+          }
+        }
+      },
+      "ProcessCreatedPayload": {
+        "required": [
+          "processId",
+          "identityId"
+        ],
+        "type": "object",
+        "properties": {
+          "processId": {
+            "type": "string",
+            "description": "The unique ID of the created process.",
+            "example": "bd77eafb-7b6d-42e1-ae26-0678fec45ffa"
+          },
+          "identityId": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "The unique ID of a created identity.",
+              "example": "018589f2-bc41-49fc-a3d4-4d8be7b6567c"
+            }
+          }
+        }
+      },
+      "ProcessDataMessage": {
+        "type": "object",
+        "properties": {
+          "header": {
+            "$ref": "#/components/schemas/Header"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/ProcessData"
+          }
+        }
+      },
+      "ProcessData": {
+        "type": "object",
+        "description": "Model that represents the information about a digital onboarding process to be created in the system",
+        "properties": {
+          "processId": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ProcessDataSources"
+          },
+          "identities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentityDataPayload"
+            }
+          }
+        }
+      },
+      "ProcessDataSources": {
+        "description": "Holds the process specific data, split between the different sources\nIt may include several sources, but each each data field shall not be included in more than one field\n",
+        "type": "object"
+      },
+      "IdentityData": {
+        "type": "object",
+        "properties": {
+          "header": {
+            "$ref": "#/components/schemas/Header"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/IdentityDataPayload"
+          }
+        }
+      },
+      "IdentityDataPayload": {
+        "type": "object",
+        "description": "Model that represents the information about a digital identity to be onboarded",
+        "properties": {
+          "identityId": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "order": {
+            "type": "integer",
+            "description": "Identity order number"
+          },
+          "data": {
+            "$ref": "#/components/schemas/IdentityDataSources"
+          }
+        }
+      },
+      "IdentityDataSources": {
+        "description": "Holds the identity data, split between the different sources\nIt may include several sources, but each each data field shall not be included in more than one field\n",
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "object"
+          }
+        }
+      },
+      "IdentityResponse": {
+        "type": "object",
+        "properties": {
+          "header": {
+            "$ref": "#/components/schemas/Header"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/Identity"
+          },
+          "responseStatus": {
+            "$ref": "#/components/schemas/ResponseStateStatus"
+          }
+        }
+      },
+      "Identity": {
+        "type": "object",
+        "description": "Model that represents the information about an already existing digital identity",
+        "required": [
+          "tenantId",
+          "identityId",
+          "state"
+        ],
+        "properties": {
+          "tenantId": {
+            "type": "string"
+          },
+          "identityId": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "info": {
+            "$ref": "#/components/schemas/IdentityDataModel"
+          },
+          "sources": {
+            "$ref": "#/components/schemas/IdentityDataSources"
+          },
+          "control": {
+            "$ref": "#/components/schemas/IdentityControlData"
+          },
+          "order": {
+            "type": "integer",
+            "description": "Identity order number"
+          },
+          "currentOperator": {
+            "type": "string",
+            "description": "Id of the operator that is blocking the Identity"
+          },
+          "lastAuthor": {
+            "type": "string"
+          },
+          "lastUpdated": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deviceUuid": {
+            "type": "string"
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocumentMetadata"
+            }
+          }
+        }
+      },
+      "IdentityUpdated": {
+        "type": "object",
+        "properties": {
+          "header": {
+            "$ref": "#/components/schemas/Header"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/IdentityUpdatedPayload"
+          },
+          "responseStatus": {
+            "$ref": "#/components/schemas/ResponseStateStatus"
+          }
+        }
+      },
+      "IdentityUpdatedPayload": {
+        "type": "object",
+        "properties": {
+          "asyncExecutionId": {
+            "type": "string",
+            "description": "If the update triggers some action, this Id is used to query about the status of that execution",
+            "example": "bd77eafb-7b6d-42e1-ae26-0678fec45ffa"
+          },
+          "currentState": {
+            "type": "string",
+            "example": "DA.A.01"
+          },
+          "finalState": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      },
+      "ProcessUpdated": {
+        "type": "object",
+        "properties": {
+          "header": {
+            "$ref": "#/components/schemas/Header"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/ProcessUpdatedPayload"
+          },
+          "responseStatus": {
+            "$ref": "#/components/schemas/ResponseStateStatus"
+          }
+        }
+      },
+      "ProcessUpdatedPayload": {
+        "type": "object",
+        "properties": {
+          "asyncExecutionId": {
+            "type": "string",
+            "description": "If the update triggers some action, this Id is used to query about the status of that execution",
+            "example": "bd77eafb-7b6d-42e1-ae26-0678fec45ffa"
+          },
+          "currentState": {
+            "type": "string",
+            "example": "DA.A.01"
+          },
+          "finalState": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      },
+      "ProcessFinished": {
+        "type": "object",
+        "properties": {
+          "header": {
+            "$ref": "#/components/schemas/Header"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/ProcessFinishedPayload"
+          },
+          "responseStatus": {
+            "$ref": "#/components/schemas/ResponseStateStatus"
+          }
+        }
+      },
+      "ProcessFinishedPayload": {
+        "type": "object"
+      },
+      "ProcessStateResponse": {
+        "type": "object",
+        "properties": {
+          "header": {
+            "$ref": "#/components/schemas/Header"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/ProcessState"
+          },
+          "responseStatus": {
+            "$ref": "#/components/schemas/ResponseStateStatus"
+          }
+        }
+      },
+      "ProcessState": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string"
+          }
+        }
+      },
+      "DocumentMetadata": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "size": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "digestAlgorithm": {
+            "type": "string"
+          },
+          "digestValue": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "object",
+            "properties": {
+              "dateTime": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "issuerDN": {
+                "type": "string"
+              },
+              "token": {
+                "type": "string"
+              }
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastUpdated": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "IdentityControlData": {
+        "description": "Holds the identity control data",
+        "properties": {
+          "flows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowExecData"
+            }
+          }
+        }
+      },
+      "IdentityDataModel": {
+        "description": "Holds the identity data",
+        "type": "object"
+      },
+      "FlowExecData": {
+        "description": "Flow execution data",
+        "properties": {
+          "flowType": {
+            "type": "string",
+            "description": "Type of the executed flow"
+          },
+          "flowExecID": {
+            "description": "Identifier of the execution of the flow in the execution order",
+            "type": "string",
+            "format": "uuid"
+          },
+          "execInstant": {
+            "description": "The instant when the flow was started",
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "DocumentDataMessage": {
+        "description": "Document Data Message",
+        "type": "object",
+        "properties": {
+          "header": {
+            "$ref": "#/components/schemas/Header"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/DocumentData"
+          }
+        }
+      },
+      "DocumentData": {
+        "required": [
+          "blob",
+          "docType"
+        ],
+        "type": "object",
+        "properties": {
+          "docType": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "blob": {
+            "type": "string",
+            "description": "Base64 encoded file content"
+          }
+        }
+      },
+      "AttachDocumentResponseMessage": {
+        "type": "object",
+        "properties": {
+          "header": {
+            "$ref": "#/components/schemas/Header"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/AttachDocumentResponse"
+          },
+          "responseStatus": {
+            "$ref": "#/components/schemas/ResponseStateStatus"
+          }
+        }
+      },
+      "AttachDocumentResponse": {
+        "required": [
+          "documentId"
+        ],
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "description": "The unique ID of the attached document.",
+            "example": "4e833472-ba36-451d-b4b1-87098e5127d7"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "process",
+      "description": "Process related routes"
+    },
+    {
+      "name": "identity",
+      "description": "Identity related routes"
+    }
+  ]
+}
