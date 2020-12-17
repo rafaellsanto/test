@@ -1,0 +1,2043 @@
+{
+    "openapi": "3.0.2",
+    "info": {
+      "version": "1.0.0",
+      "title": "Scheduling & Eventing Service (SES)",
+      "description": "This API supports all the operations supported by Loqr's Scheduling & Eventing Service.\n",
+      "termsOfService": "https://loqr.io/terms/",
+      "license": {
+        "name": "Loqr - All Rights Reserved",
+        "url": "https://loqr.io"
+      },
+      "contact": {
+        "name": "Loqr",
+        "url": "https://loqr.io",
+        "email": "info@loqr.io"
+      }
+    },
+    "servers": [
+      {
+        "url": "https://ses-00.labs.loqr.io/ses/v2",
+        "description": "Development Environment"
+      }
+    ],
+    "paths": {
+      "/tenant/{tenantId}/external/timeframe/days": {
+        "get": {
+          "tags": [
+            "timeframe"
+          ],
+          "operationId": "getTimeframeDays",
+          "summary": "Returns slots comprehended in a given timeframe organized as days",
+          "description": "Returns slots comprehended in a given timeframe organized as days<br><b>IMPORTANT: There are 4 possible outputs depending on the given query parameters:<ul><li>None - All slots contained between the current date-time and the current date-time plus the next workday hours defined by the tenant's default 'timeframeInterval' interval</li><li>startDateTime - All slots contained between the given startDateTime and the given startDateTime plus the next workday hours defined by the tenant's default 'timeframeInterval' interval</li><li>endDateTime - All slots contained between the current date-time and the given endDateTime</li><li>startDateTime and endDateTime - All slots contained between the given startDateTime and the given endDateTime</li></ul><b>",
+          "parameters": [
+            {
+              "name": "tenantId",
+              "in": "path",
+              "description": "Tenant Identifier",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "startDateTime",
+              "in": "query",
+              "description": "Query timeframe's start date time",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "endDateTime",
+              "in": "query",
+              "description": "Query timeframe's end date time",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "$ref": "#/components/responses/GetTimeframeDaysMessage"
+            },
+            "400": {
+              "$ref": "#/components/responses/BadRequestMessage"
+            },
+            "401": {
+              "$ref": "#/components/responses/UnauthorizedMessage"
+            },
+            "403": {
+              "$ref": "#/components/responses/ForbiddenMessage"
+            },
+            "404": {
+              "$ref": "#/components/responses/NotFoundMessage"
+            },
+            "500": {
+              "$ref": "#/components/responses/InternalServerErrorMessage"
+            }
+          }
+        }
+      },
+      "/tenant/{tenantId}/external/timeframe": {
+        "get": {
+          "tags": [
+            "timeframe"
+          ],
+          "operationId": "getTimeframe",
+          "summary": "Returns slots comprehended in a given timeframe",
+          "description": "Returns slots comprehended in a given timeframe<br><b>IMPORTANT: There are 4 possible outputs depending on the given query parameters:<ul><li>None - All slots contained between the current date-time and the current date-time plus the next workday hours defined by the tenant's default 'timeframeInterval' interval</li><li>startDateTime - All slots contained between the given startDateTime and the given startDateTime plus the next workday hours defined by the tenant's default 'timeframeInterval' interval</li><li>endDateTime - All slots contained between the current date-time and the given endDateTime</li><li>startDateTime and endDateTime - All slots contained between the given startDateTime and the given endDateTime</li></ul><b>",
+          "parameters": [
+            {
+              "name": "tenantId",
+              "in": "path",
+              "description": "Tenant Identifier",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "startDateTime",
+              "in": "query",
+              "description": "Query timeframe's start date time",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "endDateTime",
+              "in": "query",
+              "description": "Query timeframe's end date time",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "$ref": "#/components/responses/GetTimeframeMessage"
+            },
+            "400": {
+              "$ref": "#/components/responses/BadRequestMessage"
+            },
+            "401": {
+              "$ref": "#/components/responses/UnauthorizedMessage"
+            },
+            "403": {
+              "$ref": "#/components/responses/ForbiddenMessage"
+            },
+            "404": {
+              "$ref": "#/components/responses/NotFoundMessage"
+            },
+            "500": {
+              "$ref": "#/components/responses/InternalServerErrorMessage"
+            }
+          }
+        }
+      },
+      "/tenant/{tenantId}/external/slot": {
+        "get": {
+          "tags": [
+            "slot"
+          ],
+          "operationId": "getNextAvailableSlot",
+          "summary": "Gets the next available slot",
+          "description": "Gets the next available slot.<br><b>IMPORTANT: If no 'startDateTime' query parameter is given the the current time will be used!<b>",
+          "parameters": [
+            {
+              "name": "tenantId",
+              "in": "path",
+              "description": "Tenant Identifier",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "startDateTime",
+              "in": "query",
+              "description": "Host slot identifier",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "datetime"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "$ref": "#/components/responses/GetScheduledEventMessage"
+            },
+            "400": {
+              "$ref": "#/components/responses/BadRequestMessage"
+            },
+            "401": {
+              "$ref": "#/components/responses/UnauthorizedMessage"
+            },
+            "403": {
+              "$ref": "#/components/responses/ForbiddenMessage"
+            },
+            "404": {
+              "$ref": "#/components/responses/NotFoundMessage"
+            },
+            "500": {
+              "$ref": "#/components/responses/InternalServerErrorMessage"
+            }
+          }
+        }
+      },
+      "/tenant/{tenantId}/external/slot/{slotId}": {
+        "get": {
+          "tags": [
+            "slot"
+          ],
+          "operationId": "getSlot",
+          "summary": "Gets the given slot",
+          "description": "Gets the given slot",
+          "parameters": [
+            {
+              "name": "tenantId",
+              "in": "path",
+              "description": "Tenant Identifier",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "slotId",
+              "in": "path",
+              "description": "Host slot identifier",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "$ref": "#/components/responses/GetScheduledEventMessage"
+            },
+            "400": {
+              "$ref": "#/components/responses/BadRequestMessage"
+            },
+            "401": {
+              "$ref": "#/components/responses/UnauthorizedMessage"
+            },
+            "403": {
+              "$ref": "#/components/responses/ForbiddenMessage"
+            },
+            "404": {
+              "$ref": "#/components/responses/NotFoundMessage"
+            },
+            "500": {
+              "$ref": "#/components/responses/InternalServerErrorMessage"
+            }
+          }
+        }
+      },
+      "/tenant/{tenantId}/external/slot/{slotId}/event": {
+        "post": {
+          "tags": [
+            "slot"
+          ],
+          "operationId": "bookEvent",
+          "summary": "Books an event in the given slot id",
+          "description": "Books an event in the given slot id",
+          "parameters": [
+            {
+              "name": "tenantId",
+              "in": "path",
+              "description": "Tenant Identifier",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "slotId",
+              "in": "path",
+              "description": "Host slot identifier",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "$ref": "#/components/requestBodies/BookEventRequestBody"
+          },
+          "responses": {
+            "200": {
+              "$ref": "#/components/responses/BookEventMessage"
+            },
+            "400": {
+              "$ref": "#/components/responses/BadRequestMessage"
+            },
+            "401": {
+              "$ref": "#/components/responses/UnauthorizedMessage"
+            },
+            "403": {
+              "$ref": "#/components/responses/ForbiddenMessage"
+            },
+            "404": {
+              "$ref": "#/components/responses/NotFoundMessage"
+            },
+            "500": {
+              "$ref": "#/components/responses/InternalServerErrorMessage"
+            }
+          }
+        }
+      },
+      "/tenant/{tenantId}/external/event/{eventId}": {
+        "get": {
+          "tags": [
+            "event"
+          ],
+          "operationId": "getEvent",
+          "summary": "Returns the given event",
+          "description": "Returns the given event",
+          "parameters": [
+            {
+              "name": "tenantId",
+              "in": "path",
+              "description": "Tenant Identifier",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "eventId",
+              "in": "path",
+              "description": "Event Identifier",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "$ref": "#/components/responses/GetScheduledEventMessage"
+            },
+            "400": {
+              "$ref": "#/components/responses/BadRequestMessage"
+            },
+            "401": {
+              "$ref": "#/components/responses/UnauthorizedMessage"
+            },
+            "403": {
+              "$ref": "#/components/responses/ForbiddenMessage"
+            },
+            "404": {
+              "$ref": "#/components/responses/NotFoundMessage"
+            },
+            "500": {
+              "$ref": "#/components/responses/InternalServerErrorMessage"
+            }
+          }
+        },
+        "delete": {
+          "tags": [
+            "event"
+          ],
+          "operationId": "removeScheduledEvent",
+          "summary": "Deletes the given scheduled event",
+          "description": "Deletes the given scheduled event",
+          "parameters": [
+            {
+              "name": "tenantId",
+              "in": "path",
+              "description": "Tenant Identifier",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "eventId",
+              "in": "path",
+              "description": "Event Identifier",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "$ref": "#/components/responses/NoPayloadResponseMessage"
+            },
+            "400": {
+              "$ref": "#/components/responses/BadRequestMessage"
+            },
+            "401": {
+              "$ref": "#/components/responses/UnauthorizedMessage"
+            },
+            "403": {
+              "$ref": "#/components/responses/ForbiddenMessage"
+            },
+            "404": {
+              "$ref": "#/components/responses/NotFoundMessage"
+            },
+            "500": {
+              "$ref": "#/components/responses/InternalServerErrorMessage"
+            }
+          }
+        }
+      },
+      "/tenant/{tenantId}/external/event/{eventId}/scheduled": {
+        "get": {
+          "tags": [
+            "event"
+          ],
+          "operationId": "getScheduledEvent",
+          "summary": "Returns the given event if it hasn't happened yet",
+          "description": "Returns the given event if it hasn't happened yet",
+          "parameters": [
+            {
+              "name": "tenantId",
+              "in": "path",
+              "description": "Tenant Identifier",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "eventId",
+              "in": "path",
+              "description": "Event Identifier",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "$ref": "#/components/responses/GetScheduledEventMessage"
+            },
+            "400": {
+              "$ref": "#/components/responses/BadRequestMessage"
+            },
+            "401": {
+              "$ref": "#/components/responses/UnauthorizedMessage"
+            },
+            "403": {
+              "$ref": "#/components/responses/ForbiddenMessage"
+            },
+            "404": {
+              "$ref": "#/components/responses/NotFoundMessage"
+            },
+            "500": {
+              "$ref": "#/components/responses/InternalServerErrorMessage"
+            }
+          }
+        }
+      },
+      "/tenant/{tenantId}/external/settings": {
+        "get": {
+          "tags": [
+            "tenant"
+          ],
+          "operationId": "getTenantSettings",
+          "summary": "Gets tenant's settings",
+          "description": "Gets tenant's settings",
+          "parameters": [
+            {
+              "name": "tenantId",
+              "in": "path",
+              "description": "Tenant's Identifier",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "$ref": "#/components/responses/GetExternalTenantSettingsResponseBody"
+            },
+            "400": {
+              "$ref": "#/components/responses/BadRequestMessage"
+            },
+            "401": {
+              "$ref": "#/components/responses/UnauthorizedMessage"
+            },
+            "403": {
+              "$ref": "#/components/responses/ForbiddenMessage"
+            },
+            "404": {
+              "$ref": "#/components/responses/NotFoundMessage"
+            },
+            "500": {
+              "$ref": "#/components/responses/InternalServerErrorMessage"
+            }
+          }
+        }
+      },
+      "/misc/timezones": {
+        "get": {
+          "tags": [
+            "misc"
+          ],
+          "operationId": "availableTimezones",
+          "summary": "Returns all supported timezones",
+          "description": "Returns all supported timezones",
+          "responses": {
+            "200": {
+              "$ref": "#/components/responses/AvailableTimezonesResponseBody"
+            },
+            "400": {
+              "$ref": "#/components/responses/BadRequestMessage"
+            },
+            "401": {
+              "$ref": "#/components/responses/UnauthorizedMessage"
+            },
+            "403": {
+              "$ref": "#/components/responses/ForbiddenMessage"
+            },
+            "404": {
+              "$ref": "#/components/responses/NotFoundMessage"
+            },
+            "500": {
+              "$ref": "#/components/responses/InternalServerErrorMessage"
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "responses": {
+        "AvailableTimezonesResponseBody": {
+          "description": "Get tenant settings response message",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AvailableTimezonesResponseMessage"
+              }
+            }
+          }
+        },
+        "GetExternalTenantSettingsResponseBody": {
+          "description": "Get tenant settings response message",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExternalTenantSettingsGetResponse"
+              }
+            }
+          }
+        },
+        "UpdateEventMessage": {
+          "description": "Updated Event",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEventResponseBody"
+              }
+            }
+          }
+        },
+        "BookEventMessage": {
+          "description": "Book event response message",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookEventResponseMessage"
+              }
+            }
+          }
+        },
+        "GetScheduledEventMessage": {
+          "description": "Slot -> Event -> Notification structure representation",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetScheduledEventResponseMessage"
+              }
+            }
+          }
+        },
+        "GetTimeframeDaysMessage": {
+          "description": "Get timeframe days response message",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetTimeframeDaysResponseMessage"
+              }
+            }
+          }
+        },
+        "GetTimeframeMessage": {
+          "description": "Get timeframe response message",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetTimeframeResponseMessage"
+              }
+            }
+          }
+        },
+        "NoPayloadResponseMessage": {
+          "description": "Response with no payload\n",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoPayloadResponse"
+              }
+            }
+          }
+        },
+        "BadRequestMessage": {
+          "description": "Bad Request\n- Check Loqr Developer Portal for more detailed information\n",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResponseStateStatus"
+              }
+            }
+          }
+        },
+        "UnauthorizedMessage": {
+          "description": "Unauthorized\n - Check Loqr Developer Portal for more detailed information\n",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResponseStateStatus"
+              }
+            }
+          }
+        },
+        "ForbiddenMessage": {
+          "description": "Forbidden\n - Check Loqr Developer Portal for more detailed information\n",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResponseStateStatus"
+              }
+            }
+          }
+        },
+        "NotFoundMessage": {
+          "description": "Not Found\n- Check Loqr Developer Portal for more detailed information\n",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResponseStateStatus"
+              }
+            }
+          }
+        },
+        "InternalServerErrorMessage": {
+          "description": "Internal Server Error\n- Check Loqr Developer Portal for more detailed information\n",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResponseStateStatus"
+              }
+            }
+          }
+        }
+      },
+      "requestBodies": {
+        "BookEventRequestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEventRequestBodyPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "CreateTimeframeRequestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTimeframesRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "SlotUpdateRequestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEventRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "EventUpdateRequestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEventRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "NotificationCreateRequestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationCreateRequestBody"
+              }
+            }
+          },
+          "required": true
+        }
+      },
+      "schemas": {
+        "ExternalTenantSettingsGetResponse": {
+          "type": "object",
+          "required": [
+            "payload"
+          ],
+          "description": "Tenant's current settings",
+          "properties": {
+            "header": {
+              "$ref": "#/components/schemas/Header"
+            },
+            "payload": {
+              "$ref": "#/components/schemas/TenantSettings"
+            }
+          }
+        },
+        "TenantSettings": {
+          "required": [
+            "timezone",
+            "defaultDay",
+            "workDays",
+            "holidays",
+            "timeframeInterval",
+            "maxInterviewWaitingTime"
+          ],
+          "type": "object",
+          "properties": {
+            "timezone": {
+              "type": "string",
+              "description": "Tenant's operation timezone",
+              "example": "Europe/Lisbon"
+            },
+            "callbackUrl": {
+              "type": "string",
+              "format": "url",
+              "description": "URL where the tenant is expecting notification callbacks",
+              "example": "https://tenant.com/callback"
+            },
+            "defaultDay": {
+              "type": "array",
+              "description": "Tenant default work day timeframes",
+              "items": {
+                "$ref": "#/components/schemas/Timeframe"
+              }
+            },
+            "workDays": {
+              "type": "array",
+              "description": "Tenant work days",
+              "items": {
+                "$ref": "#/components/schemas/WorkDay"
+              }
+            },
+            "holidays": {
+              "type": "array",
+              "description": "Tenant holidays",
+              "items": {
+                "$ref": "#/components/schemas/Holiday"
+              }
+            },
+            "timeframeInterval": {
+              "type": "number",
+              "format": "integer",
+              "description": "Default timeframe interval",
+              "example": 48
+            },
+            "maxInterviewWaitingTime": {
+              "type": "number",
+              "format": "integer",
+              "description": "Hammer for CEMG (Maximum client interview waiting time)",
+              "example": 120
+            },
+            "eventNotifications": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/TenantDefaultNotification"
+              }
+            }
+          }
+        },
+        "NotificationReferenceDate": {
+          "type": "string",
+          "enum": [
+            "NEXT_DAY",
+            "SLOT_BEGIN_TIME"
+          ],
+          "description": "Reference datetime for notification's timeDelta"
+        },
+        "NotificationTimeReference": {
+          "type": "string",
+          "enum": [
+            "BEFORE",
+            "AFTER"
+          ],
+          "description": "Reference for timeDelta's reference datetime. If BEFORE the timeDelta will be subtracted to the datetime, if AFTER the timeDelta will be added to the datetime."
+        },
+        "TenantDefaultNotification": {
+          "type": "object",
+          "required": [
+            "action",
+            "timeDelta"
+          ],
+          "properties": {
+            "referenceDateType": {
+              "$ref": "#/components/schemas/NotificationReferenceDate"
+            },
+            "timeReference": {
+              "$ref": "#/components/schemas/NotificationTimeReference"
+            },
+            "action": {
+              "type": "string",
+              "description": "Action associated with the notification"
+            },
+            "timeDelta": {
+              "type": "number",
+              "description": "Time delta (in seconds)"
+            }
+          }
+        },
+        "Holiday": {
+          "type": "string",
+          "format": "date",
+          "description": "Tenant holiday representation"
+        },
+        "WorkDay": {
+          "type": "string",
+          "enum": [
+            "MONDAY",
+            "TUESDAY",
+            "WEDNESDAY",
+            "THURSDAY",
+            "FRIDAY",
+            "SATURDAY",
+            "SUNDAY"
+          ],
+          "description": "Work day representation"
+        },
+        "SlotUpdate": {
+          "type": "object",
+          "properties": {
+            "startDateTime": {
+              "type": "string",
+              "format": "datetime",
+              "description": "New slot start datetime as an ISO-8601 string in UTC/Zulu timezone",
+              "example": "2019-10-09T15:00:00Z"
+            },
+            "endDateTime": {
+              "type": "string",
+              "format": "datetime",
+              "example": "2019-10-09T15:30:00Z",
+              "description": "New slot end datetime as an ISO-8601 string in UTC/Zulu timezone"
+            },
+            "capacity": {
+              "type": "number",
+              "format": "integer",
+              "description": "New slot capacity",
+              "example": 2
+            }
+          }
+        },
+        "UpdateEventResponseBody": {
+          "type": "object",
+          "required": [
+            "payload"
+          ],
+          "properties": {
+            "header": {
+              "$ref": "#/components/schemas/Header"
+            },
+            "payload": {
+              "$ref": "#/components/schemas/Event"
+            }
+          }
+        },
+        "UpdateEventRequestBody": {
+          "type": "object",
+          "required": [
+            "payload"
+          ],
+          "properties": {
+            "header": {
+              "$ref": "#/components/schemas/Header"
+            },
+            "payload": {
+              "$ref": "#/components/schemas/UpdateEventRequestBodyPayload"
+            }
+          }
+        },
+        "UpdateEventRequestBodyPayload": {
+          "type": "object",
+          "properties": {
+            "notifications": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/CreateNotification"
+              }
+            }
+          }
+        },
+        "CreateEventRequestBody": {
+          "type": "object",
+          "required": [
+            "payload"
+          ],
+          "properties": {
+            "header": {
+              "$ref": "#/components/schemas/Header"
+            },
+            "payload": {
+              "$ref": "#/components/schemas/SlotUpdate"
+            }
+          }
+        },
+        "CreateEventRequestBodyPayload": {
+          "type": "object",
+          "required": [
+            "eventId"
+          ],
+          "properties": {
+            "eventId": {
+              "type": "string",
+              "description": "Event identifier (not necessarily a UUID)",
+              "example": "287ba3e3-ea9b-4038-a74c-d8f2a2d0b780"
+            },
+            "notifications": {
+              "type": "array",
+              "description": "Event Notifications",
+              "items": {
+                "$ref": "#/components/schemas/CreateNotification"
+              }
+            }
+          }
+        },
+        "NotificationCreateRequestBody": {
+          "type": "object",
+          "required": [
+            "payload"
+          ],
+          "properties": {
+            "header": {
+              "$ref": "#/components/schemas/Header"
+            },
+            "payload": {
+              "$ref": "#/components/schemas/CreateNotification"
+            }
+          }
+        },
+        "NoPayloadResponse": {
+          "type": "object",
+          "required": [
+            "payload"
+          ],
+          "properties": {
+            "header": {
+              "$ref": "#/components/schemas/Header"
+            },
+            "responseStatus": {
+              "$ref": "#/components/schemas/ResponseStateStatus"
+            }
+          }
+        },
+        "CreateTimeframesRequestBodyPayload": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Timeframe"
+          }
+        },
+        "CreateTimeframesRequestBody": {
+          "type": "object",
+          "required": [
+            "payload"
+          ],
+          "properties": {
+            "header": {
+              "$ref": "#/components/schemas/Header"
+            },
+            "payload": {
+              "$ref": "#/components/schemas/CreateTimeframesRequestBodyPayload"
+            }
+          }
+        },
+        "CreateNotification": {
+          "type": "object",
+          "required": [
+            "action",
+            "timeDelta"
+          ],
+          "properties": {
+            "action": {
+              "type": "string",
+              "description": "Action associated with the notification"
+            },
+            "timeDelta": {
+              "type": "number",
+              "description": "Time delta (in seconds)"
+            },
+            "referenceDateType": {
+              "type": "string",
+              "enum": [
+                "SLOT_BEGIN_TIME",
+                "BEFORE"
+              ],
+              "description": "Reference for timeDelta"
+            },
+            "timeReference": {
+              "type": "string",
+              "enum": [
+                "BEFORE",
+                "AFTER"
+              ],
+              "description": "Reference for timeDelta"
+            }
+          }
+        },
+        "StatusCode": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "status code"
+            },
+            "message": {
+              "type": "string",
+              "description": "message related to the status code"
+            }
+          }
+        },
+        "ResponseStateStatus": {
+          "required": [
+            "status"
+          ],
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "number",
+              "example": 200
+            },
+            "statusCodes": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/StatusCode"
+              }
+            }
+          }
+        },
+        "ExtraProperty": {
+          "required": [
+            "key",
+            "value"
+          ],
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "description": "The unique ID of a property."
+            },
+            "value": {
+              "type": "string",
+              "description": "The value of the unioque ID."
+            }
+          }
+        },
+        "Header": {
+          "type": "object",
+          "properties": {
+            "correlationId": {
+              "type": "string",
+              "description": "The unique ID of a group of transactions"
+            },
+            "traceID": {
+              "type": "string",
+              "description": "The unique ID of a transaction"
+            },
+            "JWT": {
+              "type": "string",
+              "description": "The authentication token"
+            },
+            "extraProperties": {
+              "type": "array",
+              "description": "Extra propoerties that are not hardly mapped on the object",
+              "items": {
+                "$ref": "#/components/schemas/ExtraProperty"
+              }
+            }
+          }
+        },
+        "Event": {
+          "type": "object",
+          "required": [
+            "eventId",
+            "notifications"
+          ],
+          "properties": {
+            "eventId": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Event's unique identifier",
+              "example": "583b0322-1d34-49c6-93cf-3f7e2dca8b23"
+            },
+            "notifications": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Notification"
+              }
+            }
+          }
+        },
+        "Notification": {
+          "type": "object",
+          "required": [
+            "notificationId",
+            "date",
+            "action",
+            "sent"
+          ],
+          "properties": {
+            "notificationId": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Notification's unique identifier",
+              "example": "7bfaa081-c76f-40b2-8940-81694145000d"
+            },
+            "date": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Datetime when the notification will be sent",
+              "example": "2019-10-07T11:30:00Z"
+            },
+            "action": {
+              "type": "string",
+              "description": "Action associated with the notification",
+              "example": "Do this now!"
+            },
+            "sent": {
+              "type": "boolean",
+              "description": "Indicates if the notification has been sent"
+            }
+          }
+        },
+        "ExternalEvent": {
+          "type": "object",
+          "required": [
+            "slotId",
+            "startDateTime",
+            "endDateTime",
+            "hasCapacity",
+            "eventId",
+            "notifications"
+          ],
+          "properties": {
+            "slotId": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Slot's unique identifier",
+              "example": "51d08be0-cacf-4143-a289-c229da890264"
+            },
+            "startDateTime": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Slot's start date time",
+              "example": "2019-10-04T10:00:00Z"
+            },
+            "endDateTime": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Slot's start end time",
+              "example": "2019-10-04T10:30:00Z"
+            },
+            "hasCapacity": {
+              "type": "boolean",
+              "description": "Specifies if slot has capacity to hold new events",
+              "example": true
+            },
+            "eventId": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Event's unique identifier",
+              "example": "583b0322-1d34-49c6-93cf-3f7e2dca8b23"
+            },
+            "notifications": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Notification"
+              }
+            }
+          }
+        },
+        "ExternalSlot": {
+          "type": "object",
+          "required": [
+            "slotId",
+            "startDateTime",
+            "endDateTime",
+            "hasCapacity"
+          ],
+          "properties": {
+            "slotId": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Slot's unique identifier",
+              "example": "51d08be0-cacf-4143-a289-c229da890264"
+            },
+            "startDateTime": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Slot's start date time",
+              "example": "2019-10-04T10:00:00Z"
+            },
+            "endDateTime": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Slot's start end time",
+              "example": "2019-10-04T10:30:00Z"
+            },
+            "hasCapacity": {
+              "type": "boolean",
+              "description": "Specifies if slot has capacity to hold new events",
+              "example": true
+            }
+          }
+        },
+        "Timeframe": {
+          "type": "object",
+          "required": [
+            "startTime",
+            "endTime",
+            "capacity",
+            "duration"
+          ],
+          "properties": {
+            "startTime": {
+              "type": "string",
+              "format": "time",
+              "description": "Timeframe start time",
+              "example": "08:00:00"
+            },
+            "endTime": {
+              "type": "string",
+              "format": "time",
+              "description": "Timeframe end time",
+              "example": "22:00:00"
+            },
+            "capacity": {
+              "type": "number",
+              "format": "integer",
+              "description": "Timeframe slots' capacity",
+              "example": 3
+            },
+            "duration": {
+              "type": "number",
+              "format": "integer",
+              "description": "Timeframe slots' duration in minutes",
+              "example": 30
+            }
+          }
+        },
+        "ExternalDaySlots": {
+          "type": "object",
+          "required": [
+            "date",
+            "slots"
+          ],
+          "properties": {
+            "date": {
+              "type": "string",
+              "format": "date",
+              "description": "Day's date",
+              "example": "2019-10-08"
+            },
+            "slots": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/ExternalSlot"
+              }
+            }
+          }
+        },
+        "GetTimeframeDaysPayload": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/ExternalDaySlots"
+          }
+        },
+        "GetTimeframePayload": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/ExternalSlot"
+          }
+        },
+        "AvailableTimezonesResponseMessage": {
+          "type": "object",
+          "required": [
+            "payload"
+          ],
+          "properties": {
+            "header": {
+              "$ref": "#/components/schemas/Header"
+            },
+            "payload": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "example": [
+                  "Africa/Abidjan",
+                  "Africa/Accra",
+                  "Africa/Addis_Ababa",
+                  "Africa/Algiers",
+                  "Africa/Asmara",
+                  "Africa/Asmera",
+                  "Africa/Bamako",
+                  "Africa/Bangui",
+                  "Africa/Banjul",
+                  "Africa/Bissau",
+                  "Africa/Blantyre",
+                  "Africa/Brazzaville",
+                  "Africa/Bujumbura",
+                  "Africa/Cairo",
+                  "Africa/Casablanca",
+                  "Africa/Ceuta",
+                  "Africa/Conakry",
+                  "Africa/Dakar",
+                  "Africa/Dar_es_Salaam",
+                  "Africa/Djibouti",
+                  "Africa/Douala",
+                  "Africa/El_Aaiun",
+                  "Africa/Freetown",
+                  "Africa/Gaborone",
+                  "Africa/Harare",
+                  "Africa/Johannesburg",
+                  "Africa/Juba",
+                  "Africa/Kampala",
+                  "Africa/Khartoum",
+                  "Africa/Kigali",
+                  "Africa/Kinshasa",
+                  "Africa/Lagos",
+                  "Africa/Libreville",
+                  "Africa/Lome",
+                  "Africa/Luanda",
+                  "Africa/Lubumbashi",
+                  "Africa/Lusaka",
+                  "Africa/Malabo",
+                  "Africa/Maputo",
+                  "Africa/Maseru",
+                  "Africa/Mbabane",
+                  "Africa/Mogadishu",
+                  "Africa/Monrovia",
+                  "Africa/Nairobi",
+                  "Africa/Ndjamena",
+                  "Africa/Niamey",
+                  "Africa/Nouakchott",
+                  "Africa/Ouagadougou",
+                  "Africa/Porto-Novo",
+                  "Africa/Sao_Tome",
+                  "Africa/Timbuktu",
+                  "Africa/Tripoli",
+                  "Africa/Tunis",
+                  "Africa/Windhoek",
+                  "America/Adak",
+                  "America/Anchorage",
+                  "America/Anguilla",
+                  "America/Antigua",
+                  "America/Araguaina",
+                  "America/Argentina/Buenos_Aires",
+                  "America/Argentina/Catamarca",
+                  "America/Argentina/ComodRivadavia",
+                  "America/Argentina/Cordoba",
+                  "America/Argentina/Jujuy",
+                  "America/Argentina/La_Rioja",
+                  "America/Argentina/Mendoza",
+                  "America/Argentina/Rio_Gallegos",
+                  "America/Argentina/Salta",
+                  "America/Argentina/San_Juan",
+                  "America/Argentina/San_Luis",
+                  "America/Argentina/Tucuman",
+                  "America/Argentina/Ushuaia",
+                  "America/Aruba",
+                  "America/Asuncion",
+                  "America/Atikokan",
+                  "America/Atka",
+                  "America/Bahia",
+                  "America/Bahia_Banderas",
+                  "America/Barbados",
+                  "America/Belem",
+                  "America/Belize",
+                  "America/Blanc-Sablon",
+                  "America/Boa_Vista",
+                  "America/Bogota",
+                  "America/Boise",
+                  "America/Buenos_Aires",
+                  "America/Cambridge_Bay",
+                  "America/Campo_Grande",
+                  "America/Cancun",
+                  "America/Caracas",
+                  "America/Catamarca",
+                  "America/Cayenne",
+                  "America/Cayman",
+                  "America/Chicago",
+                  "America/Chihuahua",
+                  "America/Coral_Harbour",
+                  "America/Cordoba",
+                  "America/Costa_Rica",
+                  "America/Creston",
+                  "America/Cuiaba",
+                  "America/Curacao",
+                  "America/Danmarkshavn",
+                  "America/Dawson",
+                  "America/Dawson_Creek",
+                  "America/Denver",
+                  "America/Detroit",
+                  "America/Dominica",
+                  "America/Edmonton",
+                  "America/Eirunepe",
+                  "America/El_Salvador",
+                  "America/Ensenada",
+                  "America/Fort_Nelson",
+                  "America/Fort_Wayne",
+                  "America/Fortaleza",
+                  "America/Glace_Bay",
+                  "America/Godthab",
+                  "America/Goose_Bay",
+                  "America/Grand_Turk",
+                  "America/Grenada",
+                  "America/Guadeloupe",
+                  "America/Guatemala",
+                  "America/Guayaquil",
+                  "America/Guyana",
+                  "America/Halifax",
+                  "America/Havana",
+                  "America/Hermosillo",
+                  "America/Indiana/Indianapolis",
+                  "America/Indiana/Knox",
+                  "America/Indiana/Marengo",
+                  "America/Indiana/Petersburg",
+                  "America/Indiana/Tell_City",
+                  "America/Indiana/Vevay",
+                  "America/Indiana/Vincennes",
+                  "America/Indiana/Winamac",
+                  "America/Indianapolis",
+                  "America/Inuvik",
+                  "America/Iqaluit",
+                  "America/Jamaica",
+                  "America/Jujuy",
+                  "America/Juneau",
+                  "America/Kentucky/Louisville",
+                  "America/Kentucky/Monticello",
+                  "America/Knox_IN",
+                  "America/Kralendijk",
+                  "America/La_Paz",
+                  "America/Lima",
+                  "America/Los_Angeles",
+                  "America/Louisville",
+                  "America/Lower_Princes",
+                  "America/Maceio",
+                  "America/Managua",
+                  "America/Manaus",
+                  "America/Marigot",
+                  "America/Martinique",
+                  "America/Matamoros",
+                  "America/Mazatlan",
+                  "America/Mendoza",
+                  "America/Menominee",
+                  "America/Merida",
+                  "America/Metlakatla",
+                  "America/Mexico_City",
+                  "America/Miquelon",
+                  "America/Moncton",
+                  "America/Monterrey",
+                  "America/Montevideo",
+                  "America/Montreal",
+                  "America/Montserrat",
+                  "America/Nassau",
+                  "America/New_York",
+                  "America/Nipigon",
+                  "America/Nome",
+                  "America/Noronha",
+                  "America/North_Dakota/Beulah",
+                  "America/North_Dakota/Center",
+                  "America/North_Dakota/New_Salem",
+                  "America/Ojinaga",
+                  "America/Panama",
+                  "America/Pangnirtung",
+                  "America/Paramaribo",
+                  "America/Phoenix",
+                  "America/Port-au-Prince",
+                  "America/Port_of_Spain",
+                  "America/Porto_Acre",
+                  "America/Porto_Velho",
+                  "America/Puerto_Rico",
+                  "America/Punta_Arenas",
+                  "America/Rainy_River",
+                  "America/Rankin_Inlet",
+                  "America/Recife",
+                  "America/Regina",
+                  "America/Resolute",
+                  "America/Rio_Branco",
+                  "America/Rosario",
+                  "America/Santa_Isabel",
+                  "America/Santarem",
+                  "America/Santiago",
+                  "America/Santo_Domingo",
+                  "America/Sao_Paulo",
+                  "America/Scoresbysund",
+                  "America/Shiprock",
+                  "America/Sitka",
+                  "America/St_Barthelemy",
+                  "America/St_Johns",
+                  "America/St_Kitts",
+                  "America/St_Lucia",
+                  "America/St_Thomas",
+                  "America/St_Vincent",
+                  "America/Swift_Current",
+                  "America/Tegucigalpa",
+                  "America/Thule",
+                  "America/Thunder_Bay",
+                  "America/Tijuana",
+                  "America/Toronto",
+                  "America/Tortola",
+                  "America/Vancouver",
+                  "America/Virgin",
+                  "America/Whitehorse",
+                  "America/Winnipeg",
+                  "America/Yakutat",
+                  "America/Yellowknife",
+                  "Antarctica/Casey",
+                  "Antarctica/Davis",
+                  "Antarctica/DumontDUrville",
+                  "Antarctica/Macquarie",
+                  "Antarctica/Mawson",
+                  "Antarctica/McMurdo",
+                  "Antarctica/Palmer",
+                  "Antarctica/Rothera",
+                  "Antarctica/South_Pole",
+                  "Antarctica/Syowa",
+                  "Antarctica/Troll",
+                  "Antarctica/Vostok",
+                  "Arctic/Longyearbyen",
+                  "Asia/Aden",
+                  "Asia/Almaty",
+                  "Asia/Amman",
+                  "Asia/Anadyr",
+                  "Asia/Aqtau",
+                  "Asia/Aqtobe",
+                  "Asia/Ashgabat",
+                  "Asia/Ashkhabad",
+                  "Asia/Atyrau",
+                  "Asia/Baghdad",
+                  "Asia/Bahrain",
+                  "Asia/Baku",
+                  "Asia/Bangkok",
+                  "Asia/Barnaul",
+                  "Asia/Beirut",
+                  "Asia/Bishkek",
+                  "Asia/Brunei",
+                  "Asia/Calcutta",
+                  "Asia/Chita",
+                  "Asia/Choibalsan",
+                  "Asia/Chongqing",
+                  "Asia/Chungking",
+                  "Asia/Colombo",
+                  "Asia/Dacca",
+                  "Asia/Damascus",
+                  "Asia/Dhaka",
+                  "Asia/Dili",
+                  "Asia/Dubai",
+                  "Asia/Dushanbe",
+                  "Asia/Famagusta",
+                  "Asia/Gaza",
+                  "Asia/Harbin",
+                  "Asia/Hebron",
+                  "Asia/Ho_Chi_Minh",
+                  "Asia/Hong_Kong",
+                  "Asia/Hovd",
+                  "Asia/Irkutsk",
+                  "Asia/Istanbul",
+                  "Asia/Jakarta",
+                  "Asia/Jayapura",
+                  "Asia/Jerusalem",
+                  "Asia/Kabul",
+                  "Asia/Kamchatka",
+                  "Asia/Karachi",
+                  "Asia/Kashgar",
+                  "Asia/Kathmandu",
+                  "Asia/Katmandu",
+                  "Asia/Khandyga",
+                  "Asia/Kolkata",
+                  "Asia/Krasnoyarsk",
+                  "Asia/Kuala_Lumpur",
+                  "Asia/Kuching",
+                  "Asia/Kuwait",
+                  "Asia/Macao",
+                  "Asia/Macau",
+                  "Asia/Magadan",
+                  "Asia/Makassar",
+                  "Asia/Manila",
+                  "Asia/Muscat",
+                  "Asia/Nicosia",
+                  "Asia/Novokuznetsk",
+                  "Asia/Novosibirsk",
+                  "Asia/Omsk",
+                  "Asia/Oral",
+                  "Asia/Phnom_Penh",
+                  "Asia/Pontianak",
+                  "Asia/Pyongyang",
+                  "Asia/Qatar",
+                  "Asia/Qostanay",
+                  "Asia/Qyzylorda",
+                  "Asia/Rangoon",
+                  "Asia/Riyadh",
+                  "Asia/Saigon",
+                  "Asia/Sakhalin",
+                  "Asia/Samarkand",
+                  "Asia/Seoul",
+                  "Asia/Shanghai",
+                  "Asia/Singapore",
+                  "Asia/Srednekolymsk",
+                  "Asia/Taipei",
+                  "Asia/Tashkent",
+                  "Asia/Tbilisi",
+                  "Asia/Tehran",
+                  "Asia/Tel_Aviv",
+                  "Asia/Thimbu",
+                  "Asia/Thimphu",
+                  "Asia/Tokyo",
+                  "Asia/Tomsk",
+                  "Asia/Ujung_Pandang",
+                  "Asia/Ulaanbaatar",
+                  "Asia/Ulan_Bator",
+                  "Asia/Urumqi",
+                  "Asia/Ust-Nera",
+                  "Asia/Vientiane",
+                  "Asia/Vladivostok",
+                  "Asia/Yakutsk",
+                  "Asia/Yangon",
+                  "Asia/Yekaterinburg",
+                  "Asia/Yerevan",
+                  "Atlantic/Azores",
+                  "Atlantic/Bermuda",
+                  "Atlantic/Canary",
+                  "Atlantic/Cape_Verde",
+                  "Atlantic/Faeroe",
+                  "Atlantic/Faroe",
+                  "Atlantic/Jan_Mayen",
+                  "Atlantic/Madeira",
+                  "Atlantic/Reykjavik",
+                  "Atlantic/South_Georgia",
+                  "Atlantic/St_Helena",
+                  "Atlantic/Stanley",
+                  "Australia/ACT",
+                  "Australia/Adelaide",
+                  "Australia/Brisbane",
+                  "Australia/Broken_Hill",
+                  "Australia/Canberra",
+                  "Australia/Currie",
+                  "Australia/Darwin",
+                  "Australia/Eucla",
+                  "Australia/Hobart",
+                  "Australia/LHI",
+                  "Australia/Lindeman",
+                  "Australia/Lord_Howe",
+                  "Australia/Melbourne",
+                  "Australia/NSW",
+                  "Australia/North",
+                  "Australia/Perth",
+                  "Australia/Queensland",
+                  "Australia/South",
+                  "Australia/Sydney",
+                  "Australia/Tasmania",
+                  "Australia/Victoria",
+                  "Australia/West",
+                  "Australia/Yancowinna",
+                  "Brazil/Acre",
+                  "Brazil/DeNoronha",
+                  "Brazil/East",
+                  "Brazil/West",
+                  "CET",
+                  "CST6CDT",
+                  "Canada/Atlantic",
+                  "Canada/Central",
+                  "Canada/Eastern",
+                  "Canada/Mountain",
+                  "Canada/Newfoundland",
+                  "Canada/Pacific",
+                  "Canada/Saskatchewan",
+                  "Canada/Yukon",
+                  "Chile/Continental",
+                  "Chile/EasterIsland",
+                  "Cuba",
+                  "EET",
+                  "EST5EDT",
+                  "Egypt",
+                  "Eire",
+                  "Etc/GMT",
+                  "Etc/GMT+0",
+                  "Etc/GMT+1",
+                  "Etc/GMT+10",
+                  "Etc/GMT+11",
+                  "Etc/GMT+12",
+                  "Etc/GMT+2",
+                  "Etc/GMT+3",
+                  "Etc/GMT+4",
+                  "Etc/GMT+5",
+                  "Etc/GMT+6",
+                  "Etc/GMT+7",
+                  "Etc/GMT+8",
+                  "Etc/GMT+9",
+                  "Etc/GMT-0",
+                  "Etc/GMT-1",
+                  "Etc/GMT-10",
+                  "Etc/GMT-11",
+                  "Etc/GMT-12",
+                  "Etc/GMT-13",
+                  "Etc/GMT-14",
+                  "Etc/GMT-2",
+                  "Etc/GMT-3",
+                  "Etc/GMT-4",
+                  "Etc/GMT-5",
+                  "Etc/GMT-6",
+                  "Etc/GMT-7",
+                  "Etc/GMT-8",
+                  "Etc/GMT-9",
+                  "Etc/GMT0",
+                  "Etc/Greenwich",
+                  "Etc/UCT",
+                  "Etc/UTC",
+                  "Etc/Universal",
+                  "Etc/Zulu",
+                  "Europe/Amsterdam",
+                  "Europe/Andorra",
+                  "Europe/Astrakhan",
+                  "Europe/Athens",
+                  "Europe/Belfast",
+                  "Europe/Belgrade",
+                  "Europe/Berlin",
+                  "Europe/Bratislava",
+                  "Europe/Brussels",
+                  "Europe/Bucharest",
+                  "Europe/Budapest",
+                  "Europe/Busingen",
+                  "Europe/Chisinau",
+                  "Europe/Copenhagen",
+                  "Europe/Dublin",
+                  "Europe/Gibraltar",
+                  "Europe/Guernsey",
+                  "Europe/Helsinki",
+                  "Europe/Isle_of_Man",
+                  "Europe/Istanbul",
+                  "Europe/Jersey",
+                  "Europe/Kaliningrad",
+                  "Europe/Kiev",
+                  "Europe/Kirov",
+                  "Europe/Lisbon",
+                  "Europe/Ljubljana",
+                  "Europe/London",
+                  "Europe/Luxembourg",
+                  "Europe/Madrid",
+                  "Europe/Malta",
+                  "Europe/Mariehamn",
+                  "Europe/Minsk",
+                  "Europe/Monaco",
+                  "Europe/Moscow",
+                  "Europe/Nicosia",
+                  "Europe/Oslo",
+                  "Europe/Paris",
+                  "Europe/Podgorica",
+                  "Europe/Prague",
+                  "Europe/Riga",
+                  "Europe/Rome",
+                  "Europe/Samara",
+                  "Europe/San_Marino",
+                  "Europe/Sarajevo",
+                  "Europe/Saratov",
+                  "Europe/Simferopol",
+                  "Europe/Skopje",
+                  "Europe/Sofia",
+                  "Europe/Stockholm",
+                  "Europe/Tallinn",
+                  "Europe/Tirane",
+                  "Europe/Tiraspol",
+                  "Europe/Ulyanovsk",
+                  "Europe/Uzhgorod",
+                  "Europe/Vaduz",
+                  "Europe/Vatican",
+                  "Europe/Vienna",
+                  "Europe/Vilnius",
+                  "Europe/Volgograd",
+                  "Europe/Warsaw",
+                  "Europe/Zagreb",
+                  "Europe/Zaporozhye",
+                  "Europe/Zurich",
+                  "GB",
+                  "GB-Eire",
+                  "GMT",
+                  "GMT0",
+                  "Greenwich",
+                  "Hongkong",
+                  "Iceland",
+                  "Indian/Antananarivo",
+                  "Indian/Chagos",
+                  "Indian/Christmas",
+                  "Indian/Cocos",
+                  "Indian/Comoro",
+                  "Indian/Kerguelen",
+                  "Indian/Mahe",
+                  "Indian/Maldives",
+                  "Indian/Mauritius",
+                  "Indian/Mayotte",
+                  "Indian/Reunion",
+                  "Iran",
+                  "Israel",
+                  "Jamaica",
+                  "Japan",
+                  "Kwajalein",
+                  "Libya",
+                  "MET",
+                  "MST7MDT",
+                  "Mexico/BajaNorte",
+                  "Mexico/BajaSur",
+                  "Mexico/General",
+                  "NZ",
+                  "NZ-CHAT",
+                  "Navajo",
+                  "PRC",
+                  "PST8PDT",
+                  "Pacific/Apia",
+                  "Pacific/Auckland",
+                  "Pacific/Bougainville",
+                  "Pacific/Chatham",
+                  "Pacific/Chuuk",
+                  "Pacific/Easter",
+                  "Pacific/Efate",
+                  "Pacific/Enderbury",
+                  "Pacific/Fakaofo",
+                  "Pacific/Fiji",
+                  "Pacific/Funafuti",
+                  "Pacific/Galapagos",
+                  "Pacific/Gambier",
+                  "Pacific/Guadalcanal",
+                  "Pacific/Guam",
+                  "Pacific/Honolulu",
+                  "Pacific/Johnston",
+                  "Pacific/Kiritimati",
+                  "Pacific/Kosrae",
+                  "Pacific/Kwajalein",
+                  "Pacific/Majuro",
+                  "Pacific/Marquesas",
+                  "Pacific/Midway",
+                  "Pacific/Nauru",
+                  "Pacific/Niue",
+                  "Pacific/Norfolk",
+                  "Pacific/Noumea",
+                  "Pacific/Pago_Pago",
+                  "Pacific/Palau",
+                  "Pacific/Pitcairn",
+                  "Pacific/Pohnpei",
+                  "Pacific/Ponape",
+                  "Pacific/Port_Moresby",
+                  "Pacific/Rarotonga",
+                  "Pacific/Saipan",
+                  "Pacific/Samoa",
+                  "Pacific/Tahiti",
+                  "Pacific/Tarawa",
+                  "Pacific/Tongatapu",
+                  "Pacific/Truk",
+                  "Pacific/Wake",
+                  "Pacific/Wallis",
+                  "Pacific/Yap",
+                  "Poland",
+                  "Portugal",
+                  "ROK",
+                  "Singapore",
+                  "SystemV/AST4",
+                  "SystemV/AST4ADT",
+                  "SystemV/CST6",
+                  "SystemV/CST6CDT",
+                  "SystemV/EST5",
+                  "SystemV/EST5EDT",
+                  "SystemV/HST10",
+                  "SystemV/MST7",
+                  "SystemV/MST7MDT",
+                  "SystemV/PST8",
+                  "SystemV/PST8PDT",
+                  "SystemV/YST9",
+                  "SystemV/YST9YDT",
+                  "Turkey",
+                  "UCT",
+                  "US/Alaska",
+                  "US/Aleutian",
+                  "US/Arizona",
+                  "US/Central",
+                  "US/East-Indiana",
+                  "US/Eastern",
+                  "US/Hawaii",
+                  "US/Indiana-Starke",
+                  "US/Michigan",
+                  "US/Mountain",
+                  "US/Pacific",
+                  "US/Pacific-New",
+                  "US/Samoa",
+                  "UTC",
+                  "Universal",
+                  "W-SU",
+                  "WET",
+                  "Zulu",
+                  "EST",
+                  "HST",
+                  "MST",
+                  "ACT",
+                  "AET",
+                  "AGT",
+                  "ART",
+                  "AST",
+                  "BET",
+                  "BST",
+                  "CAT",
+                  "CNT",
+                  "CST",
+                  "CTT",
+                  "EAT",
+                  "ECT",
+                  "IET",
+                  "IST",
+                  "JST",
+                  "MIT",
+                  "NET",
+                  "NST",
+                  "PLT",
+                  "PNT",
+                  "PRT",
+                  "PST",
+                  "SST",
+                  "VST"
+                ]
+              },
+              "uniqueItems": true,
+              "description": "Available timezones"
+            }
+          }
+        },
+        "GetTimeframeDaysResponseMessage": {
+          "type": "object",
+          "required": [
+            "payload",
+            "responseStatus"
+          ],
+          "properties": {
+            "header": {
+              "$ref": "#/components/schemas/Header"
+            },
+            "payload": {
+              "$ref": "#/components/schemas/GetTimeframeDaysPayload"
+            },
+            "responseStatus": {
+              "$ref": "#/components/schemas/ResponseStateStatus"
+            }
+          }
+        },
+        "GetTimeframeResponseMessage": {
+          "type": "object",
+          "required": [
+            "payload",
+            "responseStatus"
+          ],
+          "properties": {
+            "header": {
+              "$ref": "#/components/schemas/Header"
+            },
+            "payload": {
+              "$ref": "#/components/schemas/GetTimeframePayload"
+            },
+            "responseStatus": {
+              "$ref": "#/components/schemas/ResponseStateStatus"
+            }
+          }
+        },
+        "GetScheduledEventResponseMessage": {
+          "type": "object",
+          "required": [
+            "payload",
+            "responseStatus"
+          ],
+          "properties": {
+            "header": {
+              "$ref": "#/components/schemas/Header"
+            },
+            "payload": {
+              "$ref": "#/components/schemas/ExternalEvent"
+            },
+            "responseStatus": {
+              "$ref": "#/components/schemas/ResponseStateStatus"
+            }
+          }
+        },
+        "BookEventResponseMessage": {
+          "type": "object",
+          "required": [
+            "payload",
+            "responseStatus"
+          ],
+          "properties": {
+            "header": {
+              "$ref": "#/components/schemas/Header"
+            },
+            "payload": {
+              "$ref": "#/components/schemas/Event"
+            },
+            "responseStatus": {
+              "$ref": "#/components/schemas/ResponseStateStatus"
+            }
+          }
+        }
+      },
+      "securitySchemes": {
+        "bearerAuth": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+        }
+      }
+    },
+    "security": [
+      {
+        "bearerAuth": []
+      }
+    ],
+    "tags": [
+      {
+        "name": "timeframe",
+        "description": "Timeframe related routes"
+      },
+      {
+        "name": "slot",
+        "description": "Slot related routes"
+      },
+      {
+        "name": "event",
+        "description": "Event related routes"
+      },
+      {
+        "name": "tenant",
+        "description": "Tenant related routes"
+      }
+    ]
+  }
