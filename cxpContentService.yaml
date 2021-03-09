@@ -3,9 +3,9 @@ info:
   title: Content Services
   version: 0.9.0
 servers:
-- url:  'http://backbase.com/contentservices'
+  - url:  'http://backbase.com/contentservices'
 tags:
-- name: content-services
+  - name: content-services
 paths:
   /service-api/repositories/{repositoryId}:
     description: Repository object endpoint.
@@ -53,30 +53,6 @@ paths:
           $ref: '#/components/responses/InvalidRequest'
         '409':
           $ref: '#/components/responses/Conflict'
-
-  /service-api/repositories/{srcRepositoryId}/copy/{dstRepositoryId}:
-    description: Copy repository content endpoint.
-    post:
-      description: Copies the content of the source repository to the destination repository.
-      operationId: copyRepositoryServiceToService
-      responses:
-        '200':
-          description: Content successfully copied.
-        '404':
-          $ref: '#/components/responses/NotFound'
-    parameters:
-      - name: srcRepository
-        in: path
-        description: Repository Id to copy from
-        required: true
-        schema:
-          type: string
-      - name: dstRepository
-        in: path
-        description: Repository Id to copy to
-        required: true
-        schema:
-          type: string
 
   /service-api/contentstream/{repositoryId}/{path}:
     summary: Content stream of an object by its path within a repository.
@@ -298,13 +274,13 @@ paths:
     post:
       description: Import Resource Bundle.
       parameters:
-      - name: rootPath
-        in: query
-        description: Set the rootPath to import the bundle. Allowed regex is [a-zA-Z0-9-_]+
-        required: false
-        schema:
-          type: string
-          default: contextRoot
+        - name: rootPath
+          in: query
+          description: Set the rootPath to import the bundle. Allowed regex is [a-zA-Z0-9-_]+
+          required: false
+          schema:
+            type: string
+            default: contextRoot
       requestBody:
         content:
           multipart/form-data:
@@ -612,7 +588,7 @@ components:
     SearchRequest:
       $ref: schemas/search-request.yaml
     Dependencies:
-        $ref: schemas/dependencies.yaml
+      $ref: schemas/dependencies.yaml
     DocumentList:
       $ref: schemas/document-list.yaml
     Document:
