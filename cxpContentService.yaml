@@ -1,0 +1,684 @@
+openapi: 3.0.3
+info:
+  title: Content Services
+  version: 0.9.0
+servers:
+- url:  'http://backbase.com/contentservices'
+tags:
+- name: content-services
+paths:
+  /service-api/repositories/{repositoryId}:
+    description: Repository object endpoint.
+    get:
+      description: Returns a repository definition.
+      operationId: getRepositoryServiceToService
+      responses:
+        '200':
+          description: Repository successfully returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Repository'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      description: Deletes a repository.
+      operationId: deleteRepositoryServiceToService
+      responses:
+        '204':
+          description: Repository was successfully deleted.
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: repositoryId
+        in: path
+        description: The Identifier of the Repository to process.
+        required: true
+        schema:
+          type: string
+
+  /service-api/repositories:
+    description: Repository objects endpoint.
+    post:
+      description: Creates a repository.
+      operationId: createRepositoriesServiceToService
+      responses:
+        '201':
+          description: Repository are successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Repositories'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /service-api/repositories/{srcRepositoryId}/copy/{dstRepositoryId}:
+    description: Copy repository content endpoint.
+    post:
+      description: Copies the content of the source repository to the destination repository.
+      operationId: copyRepositoryServiceToService
+      responses:
+        '200':
+          description: Content successfully copied.
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: srcRepository
+        in: path
+        description: Repository Id to copy from
+        required: true
+        schema:
+          type: string
+      - name: dstRepository
+        in: path
+        description: Repository Id to copy to
+        required: true
+        schema:
+          type: string
+
+  /service-api/contentstream/{repositoryId}/{path}:
+    summary: Content stream of an object by its path within a repository.
+    get:
+      description: Gets content stream of an object by path.
+      operationId: renderContentStreamByPathServiceToService
+      responses:
+        '200':
+          description: Object is found. Content stream is returned.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '304':
+          description: Object is found. Content stream shoud be taken from cache.
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: repositoryId
+        in: path
+        description: Repository ID of the object to retrieve content stream of.
+        required: true
+        schema:
+          type: string
+      - name: path
+        in: path
+        description: Path to retrieve the content stream of.
+        required: true
+        schema:
+          type: string
+      - name: versionLabel
+        in: query
+        description: Optional version of the content to be retrieved. Returns latest
+          version when is not set.
+        required: false
+        schema:
+          type: string
+  /service-api/contentstream-id/{repositoryId}/{objectId}:
+    summary: Content stream of an object from a given repository.
+    get:
+      description: Gets content stream of an object by object id.
+      operationId: renderContentStreamByIdServiceToService
+      parameters:
+        - name: repositoryId
+          in: path
+          description: Repository ID of the object to retrieve content stream of.
+          required: true
+          schema:
+            type: string
+        - name: objectId
+          in: path
+          description: Object ID to retrieve content stream of.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Object is found. Content stream is returned.'
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "304":
+          description: Object is found. Content stream shoud be taken from cache.
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /service-api/content/query:
+    description: Endpoint that allows to query a list of content documents from Content Services.
+    post:
+      description: Performs a content query.
+      operationId: queryContentServiceToService
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Service-api-ContentQueryPostRequest'
+            example:
+              $ref: example/content-api-query-request-example.json
+      responses:
+        '200':
+          description: A list of content documents that are the result of the query operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentList'
+              example:
+                $ref: example/content-api-query-response-example.json
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /service-api/content/search:
+    description: An endpoint that allows to search for the content documents with a provided search term.
+    post:
+      operationId: searchContentServiceToService
+      requestBody:
+        content:
+          application/json:
+            schema:
+              anyOf:
+                - $ref: '#/components/schemas/SearchRequestByProperties'
+                - $ref: '#/components/schemas/SearchRequestByQuery'
+            example:
+              $ref: example/content-api-search-request-example.json
+      responses:
+        '200':
+          description: Search result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentList'
+              example:
+                $ref: example/content-api-query-response-example.json
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+
+  /service-api/content/save:
+    description: Documents save.
+    post:
+      description: Performs creation or update of documents.
+      operationId: saveContentServiceToService
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentsToCreateOrUpdate'
+            example:
+              $ref: example/content-api-save-request-example.json
+      responses:
+        '200':
+          description: Documents successfully created and/or updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentList'
+              example:
+                $ref: example/content-api-save-response-example.json
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /service-api/content/remove:
+    description: Documents delete query.
+    post:
+      description: Performs deletion of documents by their ids.
+      operationId: removeContentServiceToService
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Service-apiContentRemovePostRequest'
+            example:
+              $ref: example/content-api-remove-request-example.json
+      responses:
+        '204':
+          description: Documents successfully deleted.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/content/move:
+    description: Documents move request.
+    post:
+      description: Performs moving of documents.
+      operationId: moveContentServiceToService
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiContentMovePostRequest'
+            example:
+              $ref: example/content-api-move-request-example.json
+      responses:
+        '200':
+          description: Documents successfully moved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentList'
+              example:
+                $ref: example/content-api-query-response-example.json
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+
+  /service-api/content/revert:
+    description: Documents revert versions query.
+    post:
+      description: Performs documents reverting to specific versions.
+      operationId: revertContentServiceToService
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemsToRevert'
+            example:
+              $ref: example/content-api-revert-request-example.json
+      responses:
+        '200':
+          description: Documents successfully reverted to the specified versions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentList'
+              example:
+                $ref: example/content-api-query-response-example.json
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /service-api/admin/importResourceBundle:
+    summary: Import Resource Bundle
+    post:
+      description: Import Resource Bundle.
+      parameters:
+      - name: rootPath
+        in: query
+        description: Set the rootPath to import the bundle. Allowed regex is [a-zA-Z0-9-_]+
+        required: false
+        schema:
+          type: string
+          default: contextRoot
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DocumentPostRequestBody'
+      responses:
+        '201':
+          description: Import has been done successfully. Comma separated list of imported items are returned.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: 1,2,3,4
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+
+  /service-api/repositories/{repositoryId}/export:
+    summary: Export of full repository or individual content items by specified ids
+    post:
+      description: Returns a zip containing a full repository export or export of individual content items by specified ids.
+      operationId: writeExportContentBundleOnService2ServiceCall
+      parameters:
+        - name: optionalMeta
+          in: query
+          description: optional metadata to include in the export of individual items. If empty, export no metadata; if null, export all.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        description: List of content ids to export. If empty list is provided, only bare repository.xml is exported with no content.
+          If body is null, full repository export is performed.
+        required: false
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+      responses:
+        '200':
+          description: Export has been done successfully.
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    parameters:
+      - name: repositoryId
+        in: path
+        description: Repository ID from which to take export from
+        required: true
+        schema:
+          type: string
+
+  /service-api/repositories/{repositoryId}/content-items/dependencies:
+    get:
+      description: Return dependencies for provided content item ids.
+      operationId: getDependenciesByRepositoryId
+      parameters:
+        - name: repositoryId
+          in: path
+          description: Repository ID of the objects for which we want to retrieve dependencies.
+          required: true
+          schema:
+            type: string
+        - name: ids
+          in: query
+          description: List of object ids.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+        - name: direction
+          in: query
+          description: Direction to retrieve the dependencies in.
+          required: false
+          schema:
+            type: string
+            enum:
+              - SOURCE
+              - TARGET
+            default: SOURCE
+      responses:
+        '200':
+          description: List of dependencies for provided content item ids
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dependencies'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /service-api/repositories/{repositoryId}/upload:
+    description: Uploading content to specified repository.
+    post:
+      description: Perform upload of content
+      operationId: handleContentUploadOnService2ServiceCall
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - targetPath
+                - file
+                - name
+              type: object
+              properties:
+                targetPath:
+                  type: string
+                file:
+                  type: string
+                  description: File to upload.
+                  format: binary
+                name:
+                  type: string
+                cmis:objectTypeId:
+                  type: string
+                  enum:
+                    - cmis:document
+                cmis:createdBy:
+                  type: string
+                cmis:lastModifiedBy:
+                  type: string
+                bb:title:
+                  type: string
+                cmis:changeToken:
+                  type: string
+      responses:
+        '200':
+          description: Document successfully created and/or updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+              example:
+                $ref: example/content-api-upload-response-example.json
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: repositoryId
+        in: path
+        description: ID of the repository to save and/or update uploaded content items.
+        required: true
+        schema:
+          type: string
+
+components:
+  responses:
+    InvalidRequest:
+      description: 'Invalid request'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StatusMessage'
+    UnprocessableEntity:
+      description: 'Unprocessable entity'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StatusMessage'
+    InternalServerError:
+      description: 'Internal server error'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StatusMessage'
+    Conflict:
+      description: 'Conflict'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StatusMessage'
+    NotFound:
+      description: 'Object not found'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StatusMessage'
+    Unauthorized:
+      description: 'Unauthorized action'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StatusMessage'
+  schemas:
+    ApiContentMovePostRequest:
+      type: array
+      description: Payload schema to move documents.
+      items:
+        title: Document
+        required:
+          - id
+          - path
+          - repositoryId
+        type: object
+        properties:
+          id:
+            title: Document ID
+            type: string
+            description: ID of the existing document to move.
+          path:
+            title: New document path
+            type: string
+            description: New path where to move the document.
+          repositoryId:
+            title: Repository ID
+            type: string
+            description: Repository ID to which the document belongs.
+        description: CMIS Document to move
+    Service-api-ContentQueryPostRequest:
+      type: object
+      properties:
+        ids:
+          title: Ids schema.
+          type: array
+          description: Content ids to be resolved
+          items:
+            type: string
+        inlineRelationshipsContent:
+          title: InlineRelationshipsContent schema.
+          type: boolean
+          description: If relationships content should be resolved and inlined in
+            the related json content
+        loadChildren:
+          title: LoadChildren schema.
+          type: boolean
+          description: Should load the children of fetched content
+        loadContentForMimeTypes:
+          title: LoadContentForMimeTypes schema.
+          type: array
+          description: List of mimeTypes for which content should be loaded
+          items:
+            type: string
+        loadContentForTypes:
+          title: LoadContentForTypes schema.
+          type: array
+          description: List of Cmis Types for which content should be loaded
+          items:
+            title: Cmis Type schema.
+            type: string
+            description: Cmis Types
+        loadProperties:
+          title: LoadProperties schema.
+          type: boolean
+          description: Should load all properties of the fetched items
+        loadRecursiveRelationships:
+          title: LoadRecursiveRelationships schema.
+          type: boolean
+          description: Load all relationships of fetched items recursively
+        loadRenditions:
+          title: LoadRenditions schema.
+          type: boolean
+          description: 'Load all renditions of fetched items '
+        loadSourceRelationships:
+          title: LoadSourceRelationships schema.
+          type: boolean
+          description: Load the source relationships of fetched items
+        loadTargetRelationships:
+          title: LoadTargetRelationships schema.
+          type: boolean
+          description: Load the target relationships of fetched items
+        paths:
+          title: Paths schema.
+          type: array
+          description: 'List of paths of content to be searched. Child folders can
+            be omitted by adding ''!'' as prefix. For Ex: paths: [''/'', ''!/Generated
+            content''] will fetch all children of ''/ '' except ''!/Generated content'''
+          items:
+            type: string
+        repositories:
+          title: Repositories schema.
+          type: array
+          description: List of content repositories to limit the search to
+          items:
+            type: string
+        loadVersions:
+          title: Load all versions schema.
+          type: boolean
+          description: List of all version belonging to specific document.
+      description: Content Api provides querying and relationship resolving features as a replacement for CMIS
+    Service-apiContentRemovePostRequest:
+      required:
+        - ids
+        - repositoryId
+      type: object
+      properties:
+        repositoryId:
+          type: string
+          description: Repository ID to delete documents from.
+        ids:
+          type: array
+          items:
+            type: string
+            description: Document ID to delete.
+      description: Payload schema to delete documents from a specific repository.
+    SearchRequest:
+      $ref: schemas/search-request.yaml
+    Dependencies:
+        $ref: schemas/dependencies.yaml
+    DocumentList:
+      $ref: schemas/document-list.yaml
+    Document:
+      $ref: schemas/document.yaml
+    DocumentsToCreateOrUpdate:
+      $ref: schemas/documents-to-create-or-update.yaml
+    DocumentToCreateOrUpdate:
+      $ref: schemas/document-to-create-or-update.yaml
+    ItemsToRevert:
+      $ref: schemas/items-to-revert.yaml
+    ItemToRevert:
+      $ref: schemas/item-to-revert.yaml
+    SearchRequestByProperties:
+      allOf:
+        - $ref: '#/components/schemas/SearchRequest'
+        - type: object
+          required:
+            - properties
+    SearchRequestByQuery:
+      allOf:
+        - $ref: '#/components/schemas/SearchRequest'
+        - type: object
+          required:
+            - searchTerm
+    DocumentPostRequestBody:
+      type: object
+      properties:
+        file:
+          type: string
+          description: File to upload.
+          format: binary
+    DocumentFormRequestBody:
+      type: object
+      properties:
+        targetPath:
+          type: string
+        file:
+          type: string
+          description: File to upload.
+          format: binary
+        name:
+          type: string
+        cmis:objectTypeId:
+          type: string
+          enum:
+            - cmis:document
+        cmis:createdBy:
+          type: string
+        cmis:lastModifiedBy:
+          type: string
+        bb:title:
+          type: string
+        cmis:changeToken:
+          type: string
+        repositoryId:
+          type: string
+          default: contentRepository
+    Repository:
+      $ref: schemas/repository.yaml
+    Repositories:
+      $ref: schemas/repositories.yaml
+    StatusMessage:
+      type: object
+      required:
+        - 'message'
+      properties:
+        'message':
+          type: string
+          example: 'Can not process request'
