@@ -894,19 +894,6 @@ paths:
         explode: false
         schema:
           type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              uniqueItems: true
-              type: array
-              example:
-              - 324234-23423
-              - 324234-23424
-              - 324234-234235
-              - 324234-2342999
-              items:
-                type: string
       responses:
         "200":
           description: Retention Policies were successfully detached.
