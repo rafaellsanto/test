@@ -1,87 +1,356 @@
 openapi: 3.0.3
 info:
-  title: Content Services
-  version: 0.9.0
+  title: Content Services Public API
+  description: OpenAPI Documentation of Content Services Public API
+  version: 2.2.0
 servers:
-  - url:  'http://backbase.com/contentservices'
+- url: http://backbase.com/contentservices-public
 tags:
-  - name: content-services
+- name: RepositoryManagement
+  description: Handles operations on repositories
+- name: ContentExport
+  description: Handles export of content bundles
+- name: ContentImport
+  description: Handles import of content bundles
+- name: ResourceImport
+  description: Handles import of resource bundles
+- name: ContentStream
+  description: Handles content stream fetch operations
+- name: ContentStreamByPath
+  description: Handles content stream fetch operations using path to content
+- name: ContentManagement
+  description: Handles operations on content object metadata
+- name: ContentDuplication
+  description: Handles content duplication
+- name: ContentSearch
+  description: Handles search operations on content metadata
+- name: RetentionPoliciesManagement
+  description: Handles operation on Retention policies
 paths:
-  /service-api/repositories/{repositoryId}:
+  /client-api/repositories/{repositoryId}:
     description: Repository object endpoint.
     get:
+      tags:
+      - RepositoryManagement
       description: Returns a repository definition.
-      operationId: getRepositoryServiceToService
+      operationId: getRepository
+      parameters:
+      - name: repositoryId
+        in: path
+        description: The Identifier of the Repository to process.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
       responses:
-        '200':
+        "200":
           description: Repository successfully returned.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Repository'
-        '404':
-          $ref: '#/components/responses/NotFound'
+        "404":
+          description: Object not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
     delete:
+      tags:
+      - RepositoryManagement
       description: Deletes a repository.
-      operationId: deleteRepositoryServiceToService
-      responses:
-        '204':
-          description: Repository was successfully deleted.
-        '404':
-          $ref: '#/components/responses/NotFound'
-    parameters:
+      operationId: deleteRepository
+      parameters:
       - name: repositoryId
         in: path
         description: The Identifier of the Repository to process.
         required: true
+        style: simple
+        explode: false
         schema:
           type: string
-
-  /service-api/repositories:
-    description: Repository objects endpoint.
-    post:
-      description: Creates a repository.
-      operationId: createRepositoriesServiceToService
       responses:
-        '201':
-          description: Repository are successfully created.
+        "204":
+          description: Repository was successfully deleted.
+        "404":
+          description: Object not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Repositories'
-        '400':
-          $ref: '#/components/responses/InvalidRequest'
-        '409':
-          $ref: '#/components/responses/Conflict'
-
-  /service-api/contentstream/{repositoryId}/{path}:
-    summary: Content stream of an object by its path within a repository.
-    get:
-      description: Gets content stream of an object by path.
-      operationId: renderContentStreamByPathServiceToService
+                $ref: '#/components/schemas/StatusMessage'
+  /client-api/repositories:
+    description: Repository objects endpoint.
+    post:
+      tags:
+      - RepositoryManagement
+      description: Creates repositories.
+      operationId: createRepositories
+      requestBody:
+        description: A list of repositories to be created.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Repositories'
+            example:
+              $ref: '#/components/examples/RepositoriesExample'
       responses:
-        '200':
-          description: Object is found. Content stream is returned.
+        "201":
+          description: Repository are successfully created.
+        "400":
+          description: Invalid request
           content:
-            application/octet-stream:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+        "409":
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+  /client-api/repositories/{srcRepositoryId}/copy/{dstRepositoryId}:
+    description: Copy repository content endpoint.
+    post:
+      tags:
+      - RepositoryManagement
+      description: Copies the content of the source repository to the destination
+        repository.
+      operationId: copyRepository
+      parameters:
+      - name: srcRepositoryId
+        in: path
+        description: Repository Id to copy from
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: dstRepositoryId
+        in: path
+        description: Repository Id to copy to
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Content successfully copied.
+        "404":
+          description: Object not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+  /client-api/resources/import:
+    summary: Import Resource Bundle to resourceRepository.
+    post:
+      tags:
+      - ResourceImport
+      description: Import resource provided as a zipped bundle to resourceRepository.
+      operationId: importResourceBundle
+      parameters:
+      - name: rootPath
+        in: query
+        description: "Set the rootPath to import the bundle. Allowed regex is [a-zA-Z0-9-_]+.\
+          \ Bundle will be imported to contextRoot if rootPath is not specified."
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          default: contextRoot
+      requestBody:
+        description: Zipped bundle of content for import.
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  description: File to upload.
+                  format: binary
+      responses:
+        "201":
+          description: Import has been done successfully. Return array of imported
+            items ids.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourcesImportResponse'
+              example:
+              - 1
+              - 2
+              - 3
+              - 4
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+  /client-api/repositories/{repositoryId}/import:
+    description: Import a ContentBundle to public repositories.
+    post:
+      tags:
+      - ContentImport
+      operationId: importContent
+      parameters:
+      - name: repositoryId
+        in: path
+        description: Repository to import to. The repository should already exist
+          if cr parameter is false.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: parentPath
+        in: query
+        description: The path of the parent folder where to import the bundle.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          default: /
+      - name: createPath
+        in: query
+        description: "Create Path. Only considered if path is provided, allows the\
+          \ full path to be created if not already there."
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: false
+      - name: overwrite
+        in: query
+        description: "If any file is found at one or more locations specified in the\
+          \ ContentBundle, they will be overwritten."
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: true
+      - name: createRepository
+        in: query
+        description: Create repository. Indicates if repository should be created.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: false
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  description: File to upload.
+                  format: binary
+      responses:
+        "201":
+          description: Import has been done successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemImportResults'
+        "404":
+          description: Object not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+  /client-api/repositories/{repositoryId}/export:
+    summary: Export of full repository or individual content items by specified ids
+    post:
+      tags:
+      - ContentExport
+      description: Returns a zip containing a full repository export or export of
+        individual content items by specified ids.
+      operationId: writeExportContentBundleOnClientCall
+      parameters:
+      - name: repositoryId
+        in: path
+        description: Repository ID from which to take export from
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: optionalMeta
+        in: query
+        description: "optional metadata to include in the export of individual items.\
+          \ If empty, export no metadata; if null, export all."
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      requestBody:
+        description: "List of content ids to export. If empty list is provided, only\
+          \ bare repository.xml is exported with no content. If body is null, full\
+          \ repository export is performed."
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+        required: false
+      responses:
+        "200":
+          description: Export has been done successfully.
+          content:
+            application/zip:
               schema:
                 type: string
                 format: binary
-        '304':
-          description: Object is found. Content stream shoud be taken from cache.
-        '404':
-          $ref: '#/components/responses/NotFound'
-    parameters:
+        "404":
+          description: Object not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+  /api/contentstream/{repositoryId}/{objectPath}:
+    summary: Content stream of an object by its path within a repository.
+    get:
+      tags:
+      - ContentStreamByPath
+      description: Gets content stream of an object by path.
+      operationId: renderContentStreamByPath
+      parameters:
       - name: repositoryId
         in: path
         description: Repository ID of the object to retrieve content stream of.
         required: true
+        style: simple
+        explode: false
         schema:
           type: string
-      - name: path
+      - name: objectPath
         in: path
         description: Path to retrieve the content stream of.
         required: true
+        style: simple
+        explode: false
         schema:
           type: string
       - name: versionLabel
@@ -89,29 +358,22 @@ paths:
         description: Optional version of the content to be retrieved. Returns latest
           version when is not set.
         required: false
+        style: form
+        explode: true
         schema:
           type: string
-  /service-api/contentstream-id/{repositoryId}/{objectId}:
-    summary: Content stream of an object from a given repository.
-    get:
-      description: Gets content stream of an object by object id.
-      operationId: renderContentStreamByIdServiceToService
-      parameters:
-        - name: repositoryId
-          in: path
-          description: Repository ID of the object to retrieve content stream of.
-          required: true
-          schema:
-            type: string
-        - name: objectId
-          in: path
-          description: Object ID to retrieve content stream of.
-          required: true
-          schema:
-            type: string
+      - name: download
+        in: query
+        description: Determines whether content should be downloaded (if true) or
+          rendered (if false) in browser. Default value is false.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
       responses:
-        '200':
-          description: 'Object is found. Content stream is returned.'
+        "200":
+          description: Object is found. Content stream is returned.
           content:
             application/octet-stream:
               schema:
@@ -119,542 +381,2115 @@ paths:
                 format: binary
         "304":
           description: Object is found. Content stream shoud be taken from cache.
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  /service-api/content/query:
-    description: Endpoint that allows to query a list of content documents from Content Services.
-    post:
-      description: Performs a content query.
-      operationId: queryContentServiceToService
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Service-api-ContentQueryPostRequest'
-            example:
-              $ref: example/content-api-query-request-example.json
-      responses:
-        '200':
-          description: A list of content documents that are the result of the query operation.
+        "404":
+          description: Object not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DocumentList'
-              example:
-                $ref: example/content-api-query-response-example.json
-        '400':
-          $ref: '#/components/responses/InvalidRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  /service-api/content/search:
-    description: An endpoint that allows to search for the content documents with a provided search term.
+                $ref: '#/components/schemas/StatusMessage'
+  /client-api/contentstream/{repositoryId}/{objectPath}:
+    summary: Content stream of an object by its path within a repository.
+    get:
+      tags:
+      - ContentStreamByPath
+      description: Gets content stream of an object by path.
+      operationId: renderContentStreamByPathClientApi
+      parameters:
+      - name: repositoryId
+        in: path
+        description: Repository ID of the object to retrieve content stream of.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: objectPath
+        in: path
+        description: Path to retrieve the content stream of.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: versionLabel
+        in: query
+        description: Optional version of the content to be retrieved. Returns latest
+          version when is not set.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: download
+        in: query
+        description: Determines whether content should be downloaded (if true) or
+          rendered (if false) in browser. Default value is false.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: Object is found. Content stream is returned.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "304":
+          description: Object is found. Content stream shoud be taken from cache.
+        "404":
+          description: Object not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+  /api/contentstream-id/{repositoryId}/{objectId}:
+    summary: Content stream of an object from a given repository.
+    get:
+      tags:
+      - ContentStream
+      description: Gets content stream of an object by object id.
+      operationId: renderContentStreamById
+      parameters:
+      - name: repositoryId
+        in: path
+        description: Repository ID of the object to retrieve content stream of.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: objectId
+        in: path
+        description: Object ID to retrieve content stream of.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: download
+        in: query
+        description: Determines whether content should be downloaded (if true) or
+          rendered (if false) in browser. Default value is false.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: Object is found. Content stream is returned.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "304":
+          description: Object is found. Content stream shoud be taken from cache.
+        "404":
+          description: Object not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+  /api/contentstream-relationship/{relationshipId}:
+    summary: Content stream of the target relationship object.
+    get:
+      tags:
+      - ContentStream
+      description: Gets content stream of a relationship's target object by relationship
+        id.
+      operationId: renderContentStreamByRelationshipId
+      parameters:
+      - name: relationshipId
+        in: path
+        description: Relationship ID of the target object.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Object is found. Content stream is returned.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "304":
+          description: Object is found. Content stream shoud be taken from cache.
+        "404":
+          description: Object not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+  /api/content/query:
+    description: Content query.
     post:
-      operationId: searchContentServiceToService
+      tags:
+      - ContentManagement
+      description: Performs a content query.
+      operationId: queryContent
+      requestBody:
+        description: Performs a content query.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryRequest'
+            example:
+              $ref: '#/components/examples/QueryRequestExample'
+      responses:
+        "200":
+          description: Query result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Documents'
+              example:
+                $ref: '#/components/examples/QueryResponseExample'
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+        "404":
+          description: Object not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+  /api/content/search:
+    description: Content metadata search.
+    post:
+      tags:
+      - ContentSearch
+      description: Performs search in content metadata.
+      operationId: searchContent
       requestBody:
         content:
           application/json:
             schema:
-              anyOf:
-                - $ref: '#/components/schemas/SearchRequestByProperties'
-                - $ref: '#/components/schemas/SearchRequestByQuery'
+              $ref: '#/components/schemas/SearchRequest'
             example:
-              $ref: example/content-api-search-request-example.json
+              $ref: '#/components/examples/SearchRequestExample'
       responses:
-        '200':
+        "200":
           description: Search result.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DocumentList'
+                $ref: '#/components/schemas/Documents'
               example:
-                $ref: example/content-api-query-response-example.json
-        '400':
-          $ref: '#/components/responses/InvalidRequest'
-
-  /service-api/content/save:
+                $ref: '#/components/examples/QueryResponseExample'
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+  /api/content/save:
     description: Documents save.
     post:
+      tags:
+      - ContentManagement
       description: Performs creation or update of documents.
-      operationId: saveContentServiceToService
+      operationId: saveContent
       requestBody:
+        description: Performs creation or update of documents.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DocumentsToCreateOrUpdate'
+              $ref: '#/components/schemas/DocumentsToSave'
             example:
-              $ref: example/content-api-save-request-example.json
+              $ref: '#/components/examples/SaveRequestExample'
       responses:
-        '200':
+        "200":
           description: Documents successfully created and/or updated.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DocumentList'
+                $ref: '#/components/schemas/Documents'
               example:
-                $ref: example/content-api-save-response-example.json
-        '400':
-          $ref: '#/components/responses/InvalidRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  /service-api/content/remove:
+                $ref: '#/components/examples/SaveResponseExample'
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+        "404":
+          description: Object not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+  /api/content/remove:
     description: Documents delete query.
     post:
+      tags:
+      - ContentManagement
       description: Performs deletion of documents by their ids.
-      operationId: removeContentServiceToService
+      operationId: removeContent
       requestBody:
+        description: Performs deletion of documents by their ids.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Service-apiContentRemovePostRequest'
+              $ref: '#/components/schemas/RemoveRequest'
             example:
-              $ref: example/content-api-remove-request-example.json
+              $ref: '#/components/examples/RemoveRequestExample'
       responses:
-        '204':
+        "204":
           description: Documents successfully deleted.
-        '400':
-          $ref: '#/components/responses/InvalidRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+        "404":
+          description: Object not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
   /api/content/move:
     description: Documents move request.
     post:
+      tags:
+      - ContentManagement
       description: Performs moving of documents.
-      operationId: moveContentServiceToService
+      operationId: moveContent
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ApiContentMovePostRequest'
+              $ref: '#/components/schemas/DocumentsToMove'
             example:
-              $ref: example/content-api-move-request-example.json
+              $ref: '#/components/examples/MoveRequestExample'
       responses:
-        '200':
+        "200":
           description: Documents successfully moved.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DocumentList'
+                $ref: '#/components/schemas/Documents'
               example:
-                $ref: example/content-api-query-response-example.json
-        '400':
-          $ref: '#/components/responses/InvalidRequest'
-
-  /service-api/content/revert:
+                $ref: '#/components/examples/QueryResponseExample'
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+  /api/content/revert:
     description: Documents revert versions query.
     post:
+      tags:
+      - ContentManagement
       description: Performs documents reverting to specific versions.
-      operationId: revertContentServiceToService
+      operationId: revertContent
       requestBody:
+        description: Performs documents reverting to specific versions.
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ItemsToRevert'
             example:
-              $ref: example/content-api-revert-request-example.json
+              $ref: '#/components/examples/RevertRequestExample'
       responses:
-        '200':
+        "200":
           description: Documents successfully reverted to the specified versions.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DocumentList'
+                $ref: '#/components/schemas/Documents'
               example:
-                $ref: example/content-api-query-response-example.json
-        '400':
-          $ref: '#/components/responses/InvalidRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  /service-api/admin/importResourceBundle:
-    summary: Import Resource Bundle
-    post:
-      description: Import Resource Bundle.
-      parameters:
-        - name: rootPath
-          in: query
-          description: Set the rootPath to import the bundle. Allowed regex is [a-zA-Z0-9-_]+
-          required: false
-          schema:
-            type: string
-            default: contextRoot
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/DocumentPostRequestBody'
-      responses:
-        '201':
-          description: Import has been done successfully. Comma separated list of imported items are returned.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: 1,2,3,4
-        '400':
-          $ref: '#/components/responses/InvalidRequest'
-
-  /service-api/repositories/{repositoryId}/export:
-    summary: Export of full repository or individual content items by specified ids
-    post:
-      description: Returns a zip containing a full repository export or export of individual content items by specified ids.
-      operationId: writeExportContentBundleOnService2ServiceCall
-      parameters:
-        - name: optionalMeta
-          in: query
-          description: optional metadata to include in the export of individual items. If empty, export no metadata; if null, export all.
-          required: false
-          schema:
-            type: string
-      requestBody:
-        description: List of content ids to export. If empty list is provided, only bare repository.xml is exported with no content.
-          If body is null, full repository export is performed.
-        required: false
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                type: string
-      responses:
-        '200':
-          description: Export has been done successfully.
-          content:
-            application/zip:
-              schema:
-                type: string
-                format: binary
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-    parameters:
-      - name: repositoryId
-        in: path
-        description: Repository ID from which to take export from
-        required: true
-        schema:
-          type: string
-
-  /service-api/repositories/{repositoryId}/content-items/dependencies:
-    get:
-      description: Return dependencies for provided content item ids.
-      operationId: getDependenciesByRepositoryId
-      parameters:
-        - name: repositoryId
-          in: path
-          description: Repository ID of the objects for which we want to retrieve dependencies.
-          required: true
-          schema:
-            type: string
-        - name: ids
-          in: query
-          description: List of object ids.
-          required: false
-          schema:
-            type: array
-            items:
-              type: string
-        - name: direction
-          in: query
-          description: Direction to retrieve the dependencies in.
-          required: false
-          schema:
-            type: string
-            enum:
-              - SOURCE
-              - TARGET
-            default: SOURCE
-      responses:
-        '200':
-          description: List of dependencies for provided content item ids
+                $ref: '#/components/examples/QueryResponseExample'
+        "400":
+          description: Invalid request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Dependencies'
-        '400':
-          $ref: '#/components/responses/InvalidRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  /service-api/repositories/{repositoryId}/upload:
+                $ref: '#/components/schemas/StatusMessage'
+        "404":
+          description: Object not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+  /api/content/duplicate:
+    description: Documents duplication.
+    post:
+      tags:
+      - ContentDuplication
+      description: Performs duplication of documents.
+      operationId: duplicateContent
+      requestBody:
+        description: Duplicate content request.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DuplicateRequest'
+            example:
+              $ref: '#/components/examples/DuplicateRequestExample'
+      responses:
+        "201":
+          description: Documents successfully duplicated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DuplicateResponse'
+              example:
+                $ref: '#/components/examples/DuplicateResponseExample'
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+        "404":
+          description: Object not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+        "409":
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+  /client-api/repositories/{repositoryId}/upload:
     description: Uploading content to specified repository.
     post:
-      description: Perform upload of content
-      operationId: handleContentUploadOnService2ServiceCall
+      tags:
+      - ContentUpload
+      description: Performs uploading of content
+      operationId: handleContentUpload
+      parameters:
+      - name: repositoryId
+        in: path
+        description: ID of the repository to save and/or update uploaded content items.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
       requestBody:
         content:
           multipart/form-data:
             schema:
-              required:
-                - targetPath
-                - file
-                - name
-              type: object
-              properties:
-                targetPath:
-                  type: string
-                file:
-                  type: string
-                  description: File to upload.
-                  format: binary
-                name:
-                  type: string
-                cmis:objectTypeId:
-                  type: string
-                  enum:
-                    - cmis:document
-                cmis:createdBy:
-                  type: string
-                cmis:lastModifiedBy:
-                  type: string
-                bb:title:
-                  type: string
-                cmis:changeToken:
-                  type: string
+              $ref: '#/components/schemas/DocumentUpload'
       responses:
-        '200':
+        "200":
           description: Document successfully created and/or updated.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Document'
               example:
-                $ref: example/content-api-upload-response-example.json
-        '400':
-          $ref: '#/components/responses/InvalidRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-    parameters:
+                $ref: '#/components/examples/UploadResponseExample'
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+        "404":
+          description: Object not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+  /client-api/repositories/{repositoryId}/retention-policies:
+    description: Retention policies for a Repository.
+    get:
+      tags:
+      - RetentionPoliciesManagement
+      description: Returns a list of retention policies for a reposity.
+      operationId: getRetentionPoliciesForRepository
+      parameters:
       - name: repositoryId
         in: path
-        description: ID of the repository to save and/or update uploaded content items.
+        description: The Identifier of the Repository to process.
         required: true
+        style: simple
+        explode: false
         schema:
           type: string
-
+      responses:
+        "200":
+          description: Retention Policies successfully returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetentionPolicies'
+              example:
+                $ref: '#/components/examples/RetentionPoliciesExample'
+        "404":
+          description: Object not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+    post:
+      tags:
+      - RetentionPoliciesManagement
+      description: Returns a list of retention policies added to the given repository.
+      operationId: addRetentionPoliciesForRepository
+      parameters:
+      - name: repositoryId
+        in: path
+        description: The Identifier of the Repository to process.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              uniqueItems: true
+              type: array
+              example:
+              - 324234-23423
+              - 324234-23424
+              - 324234-234235
+              - 324234-2342999
+              items:
+                type: string
+      responses:
+        "200":
+          description: Retention Policies successfully addded to the reposity.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetentionPolicies'
+              example:
+                $ref: '#/components/examples/RetentionPoliciesExample'
+        "404":
+          description: Object not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+    delete:
+      tags:
+      - RetentionPoliciesManagement
+      description: detach all Retention Policies of a given repositoryId.
+      operationId: detachRetentionPolicies
+      parameters:
+      - name: repositoryId
+        in: path
+        description: The Identifier of the Repository to process.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              uniqueItems: true
+              type: array
+              example:
+              - 324234-23423
+              - 324234-23424
+              - 324234-234235
+              - 324234-2342999
+              items:
+                type: string
+      responses:
+        "200":
+          description: Retention Policies were successfully detached.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetentionPolicies'
+              example:
+                $ref: '#/components/examples/RetentionPoliciesExample'
+        "404":
+          description: Object not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+  /client-api/retention-policies:
+    description: Retention Policy management endpoints
+    get:
+      tags:
+      - RetentionPoliciesManagement
+      description: Returns all the existent retention policies
+      operationId: getAllRetentionPolicies
+      responses:
+        "200":
+          description: Returns all the retention policies found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetentionPolicies'
+              example:
+                $ref: '#/components/examples/RetentionPoliciesExample'
+    post:
+      tags:
+      - RetentionPoliciesManagement
+      description: Creates a retention policy.
+      operationId: createRetentionPolicy
+      requestBody:
+        description: Retention Policy to create.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetentionPolicy'
+            example:
+              $ref: '#/components/examples/CreateRetentionPolicyExample'
+        required: true
+      responses:
+        "201":
+          description: Retention poolicy successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetentionPolicy'
+              example:
+                $ref: '#/components/examples/RetentionPolicyExample'
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+        "409":
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+  /client-api/retention-policies/{policyId}:
+    description: Endpoint for retention policies management.
+    get:
+      tags:
+      - RetentionPoliciesManagement
+      description: Returns the requested retention policy.
+      operationId: getRetentionPolicy
+      parameters:
+      - name: policyId
+        in: path
+        description: The Identifier of the Retention policy to process.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Retention Policy successfully returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetentionPolicy'
+              example:
+                $ref: '#/components/examples/RetentionPolicyExample'
+        "404":
+          description: Object not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+    put:
+      tags:
+      - RetentionPoliciesManagement
+      description: Updates a retention policy.
+      operationId: updateRetentionPolicyforRepository
+      parameters:
+      - name: policyId
+        in: path
+        description: The Identifier of the Retention policy to process.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: Request Policy to update.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetentionPolicy'
+            example:
+              $ref: '#/components/examples/RetentionPolicyExample'
+        required: true
+      responses:
+        "200":
+          description: Retention poolicy successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetentionPolicy'
+              example:
+                $ref: '#/components/examples/RetentionPolicyExample'
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+        "409":
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+    delete:
+      tags:
+      - RetentionPoliciesManagement
+      description: Deletes a retention policy.
+      operationId: deleteRetentionPolicy
+      parameters:
+      - name: policyId
+        in: path
+        description: The Identifier of the Retention policy to process.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "204":
+          description: Retention Policy was successfully deleted.
+        "404":
+          description: Object not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+  /client-api/retention-policies/run/{repositoryId}:
+    description: Trigger evaluation of any retention policy associated with a given
+      repository definition.
+    post:
+      tags:
+      - RetentionPoliciesManagement
+      description: Runs the given retention policies to the specified repositoryId.
+      operationId: runRetentionPolicy
+      parameters:
+      - name: repositoryId
+        in: path
+        description: The Identifier of the repository to use for the retention policies
+          check.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: Retention policies to run on this repository.
+        content:
+          application/json:
+            schema:
+              uniqueItems: true
+              type: array
+              example:
+              - 324234-23423
+              - 324234-23424
+              - 324234-234235
+              - 324234-2342999
+              items:
+                type: string
+        required: false
+      responses:
+        "202":
+          description: Retention Policies check successfully triggered.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Retention Policies check successfully triggered.
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+        "404":
+          description: Object not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
+        "409":
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusMessage'
 components:
-  responses:
-    InvalidRequest:
-      description: 'Invalid request'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/StatusMessage'
-    UnprocessableEntity:
-      description: 'Unprocessable entity'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/StatusMessage'
-    InternalServerError:
-      description: 'Internal server error'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/StatusMessage'
-    Conflict:
-      description: 'Conflict'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/StatusMessage'
-    NotFound:
-      description: 'Object not found'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/StatusMessage'
-    Unauthorized:
-      description: 'Unauthorized action'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/StatusMessage'
   schemas:
-    ApiContentMovePostRequest:
+    DocumentsToMove:
+      title: Documents to move schema
       type: array
       description: Payload schema to move documents.
       items:
-        title: Document
-        required:
-          - id
-          - path
-          - repositoryId
-        type: object
-        properties:
-          id:
-            title: Document ID
-            type: string
-            description: ID of the existing document to move.
-          path:
-            title: New document path
-            type: string
-            description: New path where to move the document.
-          repositoryId:
-            title: Repository ID
-            type: string
-            description: Repository ID to which the document belongs.
-        description: CMIS Document to move
-    Service-api-ContentQueryPostRequest:
+        $ref: '#/components/schemas/document-to-move'
+    DocumentToMove:
+      title: Document to move
+      required:
+      - id
+      - path
+      - repositoryId
       type: object
       properties:
-        ids:
-          title: Ids schema.
-          type: array
-          description: Content ids to be resolved
-          items:
-            type: string
-        inlineRelationshipsContent:
-          title: InlineRelationshipsContent schema.
-          type: boolean
-          description: If relationships content should be resolved and inlined in
-            the related json content
-        loadChildren:
-          title: LoadChildren schema.
-          type: boolean
-          description: Should load the children of fetched content
-        loadContentForMimeTypes:
-          title: LoadContentForMimeTypes schema.
-          type: array
-          description: List of mimeTypes for which content should be loaded
-          items:
-            type: string
-        loadContentForTypes:
-          title: LoadContentForTypes schema.
-          type: array
-          description: List of Cmis Types for which content should be loaded
-          items:
-            title: Cmis Type schema.
-            type: string
-            description: Cmis Types
-        loadProperties:
-          title: LoadProperties schema.
-          type: boolean
-          description: Should load all properties of the fetched items
-        loadRecursiveRelationships:
-          title: LoadRecursiveRelationships schema.
-          type: boolean
-          description: Load all relationships of fetched items recursively
-        loadRenditions:
-          title: LoadRenditions schema.
-          type: boolean
-          description: 'Load all renditions of fetched items '
-        loadSourceRelationships:
-          title: LoadSourceRelationships schema.
-          type: boolean
-          description: Load the source relationships of fetched items
-        loadTargetRelationships:
-          title: LoadTargetRelationships schema.
-          type: boolean
-          description: Load the target relationships of fetched items
-        paths:
-          title: Paths schema.
-          type: array
-          description: 'List of paths of content to be searched. Child folders can
-            be omitted by adding ''!'' as prefix. For Ex: paths: [''/'', ''!/Generated
-            content''] will fetch all children of ''/ '' except ''!/Generated content'''
-          items:
-            type: string
-        repositories:
-          title: Repositories schema.
-          type: array
-          description: List of content repositories to limit the search to
-          items:
-            type: string
-        loadVersions:
-          title: Load all versions schema.
-          type: boolean
-          description: List of all version belonging to specific document.
-      description: Content Api provides querying and relationship resolving features as a replacement for CMIS
-    Service-apiContentRemovePostRequest:
+        id:
+          title: Document ID
+          type: string
+          description: ID of the existing document to move.
+        path:
+          title: New document path
+          type: string
+          description: New path where to move the document.
+        repositoryId:
+          title: Repository ID
+          type: string
+          description: Repository ID to which the document belongs.
+    RemoveRequest:
+      title: Document remove request.
       required:
-        - ids
-        - repositoryId
+      - ids
+      - repositoryId
       type: object
       properties:
         repositoryId:
           type: string
           description: Repository ID to delete documents from.
         ids:
+          minItems: 1
+          uniqueItems: true
           type: array
           items:
             type: string
             description: Document ID to delete.
       description: Payload schema to delete documents from a specific repository.
     SearchRequest:
-      $ref: schemas/search-request.yaml
-    Dependencies:
-      $ref: schemas/dependencies.yaml
-    DocumentList:
-      $ref: schemas/document-list.yaml
-    Document:
-      $ref: schemas/document.yaml
-    DocumentsToCreateOrUpdate:
-      $ref: schemas/documents-to-create-or-update.yaml
-    DocumentToCreateOrUpdate:
-      $ref: schemas/document-to-create-or-update.yaml
-    ItemsToRevert:
-      $ref: schemas/items-to-revert.yaml
-    ItemToRevert:
-      $ref: schemas/item-to-revert.yaml
-    SearchRequestByProperties:
-      allOf:
-        - $ref: '#/components/schemas/SearchRequest'
-        - type: object
-          required:
-            - properties
-    SearchRequestByQuery:
-      allOf:
-        - $ref: '#/components/schemas/SearchRequest'
-        - type: object
-          required:
-            - searchTerm
-    DocumentPostRequestBody:
       type: object
       properties:
-        file:
+        searchTerm:
+          title: searchTerm.
+          maxLength: 765
+          minLength: 1
           type: string
-          description: File to upload.
-          format: binary
-    DocumentFormRequestBody:
+          description: Free text string to be searched
+        paths:
+          title: Paths.
+          uniqueItems: true
+          type: array
+          description: "List of paths of content to be searched. Folders can be omitted\
+            \ by adding '!' as prefix. For Ex: paths: ['/', '!/Generated content']\
+            \ will search on '/ ' except '!/Generated content'"
+          items:
+            type: string
+        repositories:
+          title: Repositories.
+          uniqueItems: true
+          type: array
+          description: List of content repositories to limit the search to
+          items:
+            type: string
+        properties:
+          title: Properties.
+          type: object
+          additionalProperties:
+            type: string
+          description: Map of key/value pairs of property names and the values on
+            which the results should be filtered.
+      description: Content Api provides search functionality as a replacement for
+        CMIS
+    QueryRequest:
+      title: Content Api schema.
+      type: object
+      properties:
+        ids:
+          title: Ids.
+          uniqueItems: true
+          type: array
+          description: Content ids to be resolved
+          items:
+            type: string
+        paths:
+          uniqueItems: true
+          type: array
+          description: "List of paths of content to be searched. Child folders can\
+            \ be omitted by adding '!' as prefix. For Ex: paths: ['/', '!/Generated\
+            \ content'] will fetch all children of '/ ' except '!/Generated content'"
+          items:
+            type: string
+        repositories:
+          title: Repositories.
+          uniqueItems: true
+          type: array
+          description: List of content repositories to limit the search to. Skipping
+            this property or specifying multiple repositories is not recommended for
+            performance reasons. Not specified repository is deprecated.
+          items:
+            type: string
+        loadContentForTypes:
+          uniqueItems: true
+          type: array
+          description: List of Cmis Types for which content should be loaded
+          items:
+            title: Cmis Type.
+            type: string
+            description: Cmis Types
+        loadContentForMimeTypes:
+          uniqueItems: true
+          type: array
+          description: List of mimeTypes for which content should be loaded
+          items:
+            type: string
+        loadTargetRelationships:
+          type: boolean
+          description: Load the target relationships of fetched items
+          default: false
+        loadSourceRelationships:
+          type: boolean
+          description: Load the source relationships of fetched items
+          default: true
+        loadRecursiveRelationships:
+          type: boolean
+          description: Load all relationships of fetched items recursively
+          default: true
+        loadProperties:
+          type: boolean
+          description: Should load all properties of the fetched items
+          default: false
+        inlineRelationshipsContent:
+          type: boolean
+          description: If relationships content should be resolved and inlined in
+            the related json content
+          default: true
+        loadRenditions:
+          type: boolean
+          description: 'Load all renditions of fetched items '
+          default: false
+        loadChildren:
+          type: boolean
+          description: Should load the children of fetched content
+          default: false
+        loadVersions:
+          title: Load all versions.
+          type: boolean
+          description: List of all version belonging to specific document.
+          default: false
+      description: Content Api provides querying and relationship resolving features
+        as a replacement for CMIS
+    DuplicateRequest:
+      title: Content Api Duplicate Request Schema
+      required:
+      - contents
+      - repositoryId
+      type: object
+      properties:
+        repositoryId:
+          type: string
+          description: Repository ID to duplicate documents in.
+        rootFolder:
+          type: string
+          description: Root folder in which original documents should be searched
+            for. Default is /
+        contents:
+          title: Documents to duplicate
+          uniqueItems: true
+          type: array
+          description: All documents to duplicate in this request.
+          items:
+            $ref: '#/components/schemas/item-to-duplicate'
+      additionalProperties: false
+      description: Payload schema to duplicate documents in a specific repository.
+    DuplicateResponse:
+      title: Content Api Duplicate Response Schema
+      required:
+      - contents
+      type: object
+      properties:
+        contents:
+          title: Duplicated documents
+          uniqueItems: true
+          type: array
+          description: All duplicated documents under request.
+          items:
+            $ref: '#/components/schemas/duplicated-item'
+      description: Response payload with duplicated documents information.
+    Documents:
+      uniqueItems: true
+      type: array
+      description: List of Documents. Result query from the content api
+      items:
+        $ref: '#/components/schemas/document'
+    DocumentUpload:
+      title: Document upload
+      required:
+      - file
+      - name
+      - targetPath
       type: object
       properties:
         targetPath:
           type: string
+          description: Path where the item should be added.
         file:
           type: string
           description: File to upload.
           format: binary
         name:
           type: string
+          description: File name.
         cmis:objectTypeId:
           type: string
+          description: Document Object Type ID property.
           enum:
-            - cmis:document
+          - cmis:document
         cmis:createdBy:
           type: string
+          description: Document created by property.
         cmis:lastModifiedBy:
           type: string
+          description: Document last modified by property.
         bb:title:
           type: string
-        cmis:changeToken:
+          description: Document title property.
+        bb:locale:
           type: string
+          description: Document locale property.
+        changeToken:
+          type: string
+          description: Document change token property.
+    Document:
+      title: A Document.
+      type: object
+      properties:
+        path:
+          title: Path.
+          type: string
+          description: Content Path.
+        id:
+          title: Id.
+          type: string
+          description: Content unique id.
+        repositoryId:
+          title: RepositoryId.
+          type: string
+          description: Repository which the socument belongs to.
+        type:
+          title: Type.
+          type: string
+          description: The cmis type of this document.
+        versionLabel:
+          title: Version Label.
+          type: string
+          description: The version label for this document.
+        creationDate:
+          title: Creation timestamp.
+          type: string
+          description: "Date / time of creation, ISO format."
+          format: date-time
+        lastModificationDate:
+          title: Modification timestamp.
+          type: string
+          description: "Date / time of last modification, ISO format."
+          format: date-time
+        properties:
+          title: Properties.
+          type: object
+          additionalProperties:
+            type: object
+          description: List of cmis properties of this document.
+        content:
+          title: Content
+          type: string
+          description: Content of the document
+        mimeType:
+          type: string
+          description: Content mime type
+          default: application/json; charset=utf-8
+        length:
+          title: Length.
+          type: integer
+          description: Length of the document.
+          format: int64
+        renditions:
+          title: Renditions.
+          uniqueItems: true
+          type: array
+          description: All the renditions of this Document.
+          items:
+            $ref: '#/components/schemas/rendition'
+        children:
+          title: Children.
+          uniqueItems: true
+          type: array
+          description: This document's children list.
+          items:
+            $ref: '#/components/schemas/document'
+        relationships:
+          title: Relationships.
+          uniqueItems: true
+          type: array
+          description: All the relationship to/from this document
+          items:
+            $ref: '#/components/schemas/document-relationship'
+        versions:
+          title: Versions.
+          uniqueItems: true
+          type: array
+          description: All versions of this document
+          items:
+            $ref: '#/components/schemas/document'
+        links:
+          title: Links
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: object
+          description: All the different links to the document
+      description: Content Services Document
+    DocumentsToSave:
+      title: Content Api schema
+      type: array
+      description: Payload schema to create or update documents.
+      items:
+        $ref: '#/components/schemas/document-to-save'
+    DocumentToSave:
+      title: Document
+      required:
+      - repositoryId
+      type: object
+      properties:
+        id:
+          title: Document ID
+          type: string
+          description: ID of the existing document to update.
+        path:
+          title: Document path
+          type: string
+          description: Path of the document to create or update. Folders in the path
+            will be created automatically if needed.
+        repositoryId:
+          title: Repository ID
+          type: string
+          description: Repository ID to which updating or creating document belongs.
+        type:
+          title: Type of the document
+          type: string
+          description: The cmis type of the document
+          default: bb:structuredcontent
+        content:
+          title: Content
+          type: string
+          description: Content of the document to create or update
+        mimeType:
+          type: string
+          description: Content mime type
+          default: application/json; charset=utf-8
+        length:
+          title: Length
+          type: integer
+          description: Content length
+          format: int64
+        properties:
+          title: Content item properties
+          type: object
+          additionalProperties:
+            type: object
+          description: Optional content item properties
+      description: CMIS Document to create or update
+    ItemsToRevert:
+      title: Content Api schema
+      type: array
+      description: Payload schema to revert documents to a specific versions.
+      items:
+        $ref: '#/components/schemas/item-to-revert'
+    ItemToRevert:
+      title: Object that specifies the reference to certain version of object
+      required:
+      - id
+      - repositoryId
+      - version
+      type: object
+      properties:
         repositoryId:
           type: string
-          default: contentRepository
-    Repository:
-      $ref: schemas/repository.yaml
-    Repositories:
-      $ref: schemas/repositories.yaml
-    StatusMessage:
-      type: object
-      required:
-        - 'message'
-      properties:
-        'message':
+          description: Repository ID to revert version of documents from.
+        id:
           type: string
-          example: 'Can not process request'
+          description: Document ID to revert.
+        version:
+          type: string
+          description: Version label to revert to.
+      description: Schema to revert to a specific version of the Document
+    Rendition:
+      title: Rendition.
+      type: object
+      properties:
+        streamId:
+          title: StreamId.
+          type: string
+          description: The rendition's stream id.
+        mimeType:
+          title: MimeType.
+          type: string
+          description: The rendition's mimeType.
+        length:
+          title: Length.
+          type: integer
+          description: The Renditions length.
+          format: int32
+        title:
+          title: Title.
+          type: string
+          description: Rendition's title.
+        kind:
+          title: Kind.
+          type: string
+          description: The cmis kind of the rendition.
+        height:
+          title: Height.
+          type: integer
+          description: Height of the Rendition (Applicable only for images).
+          format: int32
+        width:
+          title: Width.
+          type: integer
+          description: Width of the Rendition (Applicable only for images).
+          format: int32
+        renditionDocumentId:
+          title: RenditionDocumentId.
+          type: string
+          description: The rendition Document id.
+        originalDocumentId:
+          title: OriginalDocumentId.
+          type: string
+          description: The rendition original Document id.
+        links:
+          title: Links
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: object
+          description: All the links to this Rendition.
+      description: Rendition definition.
+    Repository:
+      title: Description of the Repository type.
+      required:
+      - description
+      - name
+      - repositoryId
+      type: object
+      properties:
+        repositoryId:
+          title: RepositoryId.
+          type: string
+          description: Repository id.
+        name:
+          type: string
+          description: Repository name.
+        description:
+          type: string
+          description: Repository description.
+        isPrivate:
+          type: boolean
+          description: Whether or not the repository is marked as private within Content
+            Services
+          default: false
+        implementation:
+          type: string
+          description: Storage implementation name
+        versioningEnabled:
+          type: boolean
+          description: Flag that indicates whether repository versioned
+          default: true
+        configData:
+          type: string
+          description: configuration data
+      description: CMIS Repository type
+    Repositories:
+      title: Repository collection schema
+      type: array
+      description: Schema of a collection of Repository objects.
+      items:
+        $ref: '#/components/schemas/repository'
+    ResourcesImportResponse:
+      title: Resources import response
+      uniqueItems: true
+      type: array
+      description: Schema of a collection of resource import responses.
+      items:
+        type: string
+    RetentionPolicy:
+      title: Description of the Retention Policy type.
+      required:
+      - description
+      - name
+      - pattern
+      - timeToLive
+      type: object
+      properties:
+        id:
+          title: Retention Policy Id
+          type: string
+          description: Retention policy unique Identifier
+        name:
+          title: Retention Policy Name
+          type: string
+          description: Retention policy unique name
+        pattern:
+          title: Pattern
+          type: string
+          description: Ant Pattern of files to match
+        description:
+          title: Description
+          type: string
+          description: Retention policy description.
+        timeToLive:
+          title: TimeToLive
+          type: string
+          description: "Specifies the time to live of the files that match the specified\
+            \ pattern in the repository expressed in the following format: 2y 7m 15d/14m/1y\
+            \ 50d/etc. The duration value cannot be less than 1 day"
+      description: Retention Policy type.
+    RetentionPolicies:
+      title: Retention Policies collection schema
+      type: array
+      description: Schema of a collection of Retention Policies objects.
+      items:
+        $ref: '#/components/schemas/retention-policy'
+    ItemImportResults:
+      title: Result of content bundle import
+      type: array
+      description: Response schema of content import result.
+      items:
+        $ref: '#/components/schemas/item-import-result'
+    StatusMessage:
+      required:
+      - message
+      type: object
+      properties:
+        message:
+          type: string
+          example: Can not process request
+    documents-to-move:
+      title: Documents to move schema
+      type: array
+      description: Payload schema to move documents.
+      items:
+        $ref: '#/components/schemas/document-to-move'
+    document-to-move:
+      title: Document to move
+      required:
+      - id
+      - path
+      - repositoryId
+      type: object
+      properties:
+        id:
+          title: Document ID
+          type: string
+          description: ID of the existing document to move.
+        path:
+          title: New document path
+          type: string
+          description: New path where to move the document.
+        repositoryId:
+          title: Repository ID
+          type: string
+          description: Repository ID to which the document belongs.
+    remove-request:
+      title: Document remove request.
+      required:
+      - ids
+      - repositoryId
+      type: object
+      properties:
+        repositoryId:
+          type: string
+          description: Repository ID to delete documents from.
+        ids:
+          minItems: 1
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+            description: Document ID to delete.
+      description: Payload schema to delete documents from a specific repository.
+    search-request:
+      type: object
+      properties:
+        searchTerm:
+          title: searchTerm.
+          maxLength: 765
+          minLength: 1
+          type: string
+          description: Free text string to be searched
+        paths:
+          title: Paths.
+          uniqueItems: true
+          type: array
+          description: "List of paths of content to be searched. Folders can be omitted\
+            \ by adding '!' as prefix. For Ex: paths: ['/', '!/Generated content']\
+            \ will search on '/ ' except '!/Generated content'"
+          items:
+            type: string
+        repositories:
+          title: Repositories.
+          uniqueItems: true
+          type: array
+          description: List of content repositories to limit the search to
+          items:
+            type: string
+        properties:
+          title: Properties.
+          type: object
+          additionalProperties:
+            type: string
+          description: Map of key/value pairs of property names and the values on
+            which the results should be filtered.
+      description: Content Api provides search functionality as a replacement for
+        CMIS
+    query-request:
+      title: Content Api schema.
+      type: object
+      properties:
+        ids:
+          title: Ids.
+          uniqueItems: true
+          type: array
+          description: Content ids to be resolved
+          items:
+            type: string
+        paths:
+          uniqueItems: true
+          type: array
+          description: "List of paths of content to be searched. Child folders can\
+            \ be omitted by adding '!' as prefix. For Ex: paths: ['/', '!/Generated\
+            \ content'] will fetch all children of '/ ' except '!/Generated content'"
+          items:
+            type: string
+        repositories:
+          title: Repositories.
+          uniqueItems: true
+          type: array
+          description: List of content repositories to limit the search to. Skipping
+            this property or specifying multiple repositories is not recommended for
+            performance reasons. Not specified repository is deprecated.
+          items:
+            type: string
+        loadContentForTypes:
+          uniqueItems: true
+          type: array
+          description: List of Cmis Types for which content should be loaded
+          items:
+            title: Cmis Type.
+            type: string
+            description: Cmis Types
+        loadContentForMimeTypes:
+          uniqueItems: true
+          type: array
+          description: List of mimeTypes for which content should be loaded
+          items:
+            type: string
+        loadTargetRelationships:
+          type: boolean
+          description: Load the target relationships of fetched items
+          default: false
+        loadSourceRelationships:
+          type: boolean
+          description: Load the source relationships of fetched items
+          default: true
+        loadRecursiveRelationships:
+          type: boolean
+          description: Load all relationships of fetched items recursively
+          default: true
+        loadProperties:
+          type: boolean
+          description: Should load all properties of the fetched items
+          default: false
+        inlineRelationshipsContent:
+          type: boolean
+          description: If relationships content should be resolved and inlined in
+            the related json content
+          default: true
+        loadRenditions:
+          type: boolean
+          description: 'Load all renditions of fetched items '
+          default: false
+        loadChildren:
+          type: boolean
+          description: Should load the children of fetched content
+          default: false
+        loadVersions:
+          title: Load all versions.
+          type: boolean
+          description: List of all version belonging to specific document.
+          default: false
+      description: Content Api provides querying and relationship resolving features
+        as a replacement for CMIS
+    duplicate-request:
+      title: Content Api Duplicate Request Schema
+      required:
+      - contents
+      - repositoryId
+      type: object
+      properties:
+        repositoryId:
+          type: string
+          description: Repository ID to duplicate documents in.
+        rootFolder:
+          type: string
+          description: Root folder in which original documents should be searched
+            for. Default is /
+        contents:
+          title: Documents to duplicate
+          uniqueItems: true
+          type: array
+          description: All documents to duplicate in this request.
+          items:
+            $ref: '#/components/schemas/item-to-duplicate'
+      additionalProperties: false
+      description: Payload schema to duplicate documents in a specific repository.
+    duplicate-response:
+      title: Content Api Duplicate Response Schema
+      required:
+      - contents
+      type: object
+      properties:
+        contents:
+          title: Duplicated documents
+          uniqueItems: true
+          type: array
+          description: All duplicated documents under request.
+          items:
+            $ref: '#/components/schemas/duplicated-item'
+      description: Response payload with duplicated documents information.
+    documents:
+      uniqueItems: true
+      type: array
+      description: List of Documents. Result query from the content api
+      items:
+        $ref: '#/components/schemas/document'
+    document-upload:
+      title: Document upload
+      required:
+      - file
+      - name
+      - targetPath
+      type: object
+      properties:
+        targetPath:
+          type: string
+          description: Path where the item should be added.
+        file:
+          type: string
+          description: File to upload.
+          format: binary
+        name:
+          type: string
+          description: File name.
+        cmis:objectTypeId:
+          type: string
+          description: Document Object Type ID property.
+          enum:
+          - cmis:document
+        cmis:createdBy:
+          type: string
+          description: Document created by property.
+        cmis:lastModifiedBy:
+          type: string
+          description: Document last modified by property.
+        bb:title:
+          type: string
+          description: Document title property.
+        bb:locale:
+          type: string
+          description: Document locale property.
+        changeToken:
+          type: string
+          description: Document change token property.
+    document:
+      title: A Document.
+      type: object
+      properties:
+        path:
+          title: Path.
+          type: string
+          description: Content Path.
+        id:
+          title: Id.
+          type: string
+          description: Content unique id.
+        repositoryId:
+          title: RepositoryId.
+          type: string
+          description: Repository which the socument belongs to.
+        type:
+          title: Type.
+          type: string
+          description: The cmis type of this document.
+        versionLabel:
+          title: Version Label.
+          type: string
+          description: The version label for this document.
+        creationDate:
+          title: Creation timestamp.
+          type: string
+          description: "Date / time of creation, ISO format."
+          format: date-time
+        lastModificationDate:
+          title: Modification timestamp.
+          type: string
+          description: "Date / time of last modification, ISO format."
+          format: date-time
+        properties:
+          title: Properties.
+          type: object
+          additionalProperties:
+            type: object
+          description: List of cmis properties of this document.
+        content:
+          title: Content
+          type: string
+          description: Content of the document
+        mimeType:
+          type: string
+          description: Content mime type
+          default: application/json; charset=utf-8
+        length:
+          title: Length.
+          type: integer
+          description: Length of the document.
+          format: int64
+        renditions:
+          title: Renditions.
+          uniqueItems: true
+          type: array
+          description: All the renditions of this Document.
+          items:
+            $ref: '#/components/schemas/rendition'
+        children:
+          title: Children.
+          uniqueItems: true
+          type: array
+          description: This document's children list.
+          items:
+            $ref: '#/components/schemas/document'
+        relationships:
+          title: Relationships.
+          uniqueItems: true
+          type: array
+          description: All the relationship to/from this document
+          items:
+            $ref: '#/components/schemas/document-relationship'
+        versions:
+          title: Versions.
+          uniqueItems: true
+          type: array
+          description: All versions of this document
+          items:
+            $ref: '#/components/schemas/document'
+        links:
+          title: Links
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: object
+          description: All the different links to the document
+      description: Content Services Document
+    documents-to-save:
+      title: Content Api schema
+      type: array
+      description: Payload schema to create or update documents.
+      items:
+        $ref: '#/components/schemas/document-to-save'
+    document-to-save:
+      title: Document
+      required:
+      - repositoryId
+      type: object
+      properties:
+        id:
+          title: Document ID
+          type: string
+          description: ID of the existing document to update.
+        path:
+          title: Document path
+          type: string
+          description: Path of the document to create or update. Folders in the path
+            will be created automatically if needed.
+        repositoryId:
+          title: Repository ID
+          type: string
+          description: Repository ID to which updating or creating document belongs.
+        type:
+          title: Type of the document
+          type: string
+          description: The cmis type of the document
+          default: bb:structuredcontent
+        content:
+          title: Content
+          type: string
+          description: Content of the document to create or update
+        mimeType:
+          type: string
+          description: Content mime type
+          default: application/json; charset=utf-8
+        length:
+          title: Length
+          type: integer
+          description: Content length
+          format: int64
+        properties:
+          title: Content item properties
+          type: object
+          additionalProperties:
+            type: object
+          description: Optional content item properties
+      description: CMIS Document to create or update
+    items-to-revert:
+      title: Content Api schema
+      type: array
+      description: Payload schema to revert documents to a specific versions.
+      items:
+        $ref: '#/components/schemas/item-to-revert'
+    item-to-revert:
+      title: Object that specifies the reference to certain version of object
+      required:
+      - id
+      - repositoryId
+      - version
+      type: object
+      properties:
+        repositoryId:
+          type: string
+          description: Repository ID to revert version of documents from.
+        id:
+          type: string
+          description: Document ID to revert.
+        version:
+          type: string
+          description: Version label to revert to.
+      description: Schema to revert to a specific version of the Document
+    rendition:
+      title: Rendition.
+      type: object
+      properties:
+        streamId:
+          title: StreamId.
+          type: string
+          description: The rendition's stream id.
+        mimeType:
+          title: MimeType.
+          type: string
+          description: The rendition's mimeType.
+        length:
+          title: Length.
+          type: integer
+          description: The Renditions length.
+          format: int32
+        title:
+          title: Title.
+          type: string
+          description: Rendition's title.
+        kind:
+          title: Kind.
+          type: string
+          description: The cmis kind of the rendition.
+        height:
+          title: Height.
+          type: integer
+          description: Height of the Rendition (Applicable only for images).
+          format: int32
+        width:
+          title: Width.
+          type: integer
+          description: Width of the Rendition (Applicable only for images).
+          format: int32
+        renditionDocumentId:
+          title: RenditionDocumentId.
+          type: string
+          description: The rendition Document id.
+        originalDocumentId:
+          title: OriginalDocumentId.
+          type: string
+          description: The rendition original Document id.
+        links:
+          title: Links
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: object
+          description: All the links to this Rendition.
+      description: Rendition definition.
+    repository:
+      title: Description of the Repository type.
+      required:
+      - description
+      - name
+      - repositoryId
+      type: object
+      properties:
+        repositoryId:
+          title: RepositoryId.
+          type: string
+          description: Repository id.
+        name:
+          type: string
+          description: Repository name.
+        description:
+          type: string
+          description: Repository description.
+        isPrivate:
+          type: boolean
+          description: Whether or not the repository is marked as private within Content
+            Services
+          default: false
+        implementation:
+          type: string
+          description: Storage implementation name
+        versioningEnabled:
+          type: boolean
+          description: Flag that indicates whether repository versioned
+          default: true
+        configData:
+          type: string
+          description: configuration data
+      description: CMIS Repository type
+    repositories:
+      title: Repository collection schema
+      type: array
+      description: Schema of a collection of Repository objects.
+      items:
+        $ref: '#/components/schemas/repository'
+    resources-import-response:
+      title: Resources import response
+      uniqueItems: true
+      type: array
+      description: Schema of a collection of resource import responses.
+      items:
+        type: string
+    retention-policy:
+      title: Description of the Retention Policy type.
+      required:
+      - description
+      - name
+      - pattern
+      - timeToLive
+      type: object
+      properties:
+        id:
+          title: Retention Policy Id
+          type: string
+          description: Retention policy unique Identifier
+        name:
+          title: Retention Policy Name
+          type: string
+          description: Retention policy unique name
+        pattern:
+          title: Pattern
+          type: string
+          description: Ant Pattern of files to match
+        description:
+          title: Description
+          type: string
+          description: Retention policy description.
+        timeToLive:
+          title: TimeToLive
+          type: string
+          description: "Specifies the time to live of the files that match the specified\
+            \ pattern in the repository expressed in the following format: 2y 7m 15d/14m/1y\
+            \ 50d/etc. The duration value cannot be less than 1 day"
+      description: Retention Policy type.
+    retention-policies:
+      title: Retention Policies collection schema
+      type: array
+      description: Schema of a collection of Retention Policies objects.
+      items:
+        $ref: '#/components/schemas/retention-policy'
+    item-import-results:
+      title: Result of content bundle import
+      type: array
+      description: Response schema of content import result.
+      items:
+        $ref: '#/components/schemas/item-import-result'
+    item-to-duplicate:
+      title: Document to duplicate
+      required:
+      - sourceContentId
+      type: object
+      properties:
+        sourceContentId:
+          title: SourceContentId
+          type: string
+          description: The id of the document to be duplicated.
+        targetPath:
+          title: Target path
+          type: string
+          description: "The path which the duplicated item should have. If ends with\
+            \ /, original document's name is appended. If not provided, duplicate\
+            \ will be stored in the original folder with name appended with _copy_timestamp"
+      description: Document to duplicate
+    duplicated-item:
+      title: Duplicated document response
+      required:
+      - duplicatedContentId
+      - duplicatedStatus
+      - sourceContentId
+      - targetPath
+      type: object
+      properties:
+        sourceContentId:
+          title: SourceContentId.
+          type: string
+          description: The id of the original document which was duplicated.
+        duplicatedContentId:
+          title: DuplicatedContentId.
+          type: string
+          description: "The id of the duplicated document. If duplicatedStatus is\
+            \ false, it equals to sourceContentId"
+        targetPath:
+          title: Target path.
+          type: string
+          description: "The path of the duplicated document. If duplicatedStatus is\
+            \ false, it is empty."
+        duplicatedStatus:
+          title: Duplication status.
+          type: boolean
+          description: Whether the document was duplicated or not. False only if source
+            document is not in rootFolder
+      description: Duplicated document response.
+    document-relationship:
+      title: Document Relationship
+      type: object
+      properties:
+        id:
+          title: Id.
+          type: string
+          description: Relationship id.
+        from:
+          title: From.
+          type: string
+          description: ID of the source Document.
+        to:
+          title: To.
+          type: string
+          description: ID of the target Document.
+        toRepositoryId:
+          title: ToRepositoryId.
+          type: string
+          description: ID of the target Repository.
+      description: Two ways direction relationship between Documents
+    item-import-result:
+      title: Result of importing a single item
+      type: object
+      properties:
+        contentItem:
+          $ref: '#/components/schemas/imported-content-item'
+        exception:
+          type: string
+          description: String reperesentation of the error happened during item import.
+        message:
+          type: string
+          description: Failure message.
+    imported-content-item:
+      title: Imported content item.
+      type: object
+      properties:
+        contentpath:
+          type: string
+          description: Content path that item supposed to be imported to
+        bundlepath:
+          type: string
+          description: Path in import bundle.
+        contentRelationships:
+          $ref: '#/components/schemas/content-relationships'
+        itemproperties:
+          type: array
+          description: Content item properties.
+          items:
+            $ref: '#/components/schemas/content-item-property'
+    content-relationships:
+      title: Content relationship wrapper.
+      required:
+      - referencedContentIds
+      - sourceId
+      type: object
+      properties:
+        sourceId:
+          title: SourceId.
+          type: string
+          description: Identifier of the source object
+        referencedContentIds:
+          title: Referenced content Ids.
+          uniqueItems: true
+          type: array
+          description: List of content relationships for these object
+          items:
+            $ref: '#/components/schemas/relationship-target'
+      description: Maps relationship source with targets
+    content-item-property:
+      title: Content item property
+      required:
+      - propertyId
+      - propertyType
+      - value
+      type: object
+      properties:
+        propertyId:
+          type: string
+          description: Property Id.
+        value:
+          type: string
+          description: Property value.
+        propertyType:
+          type: string
+          description: Type of property.
+    relationship-target:
+      title: Target of relationship.
+      required:
+      - contentId
+      - relationshipId
+      - repositoryId
+      type: object
+      properties:
+        relationshipId:
+          title: RelationshipId.
+          type: string
+          description: Relationship id.
+        repositoryId:
+          title: RepositoryId.
+          type: string
+          description: Target repository id.
+        contentId:
+          title: ContentId.
+          type: string
+          description: Target content item id.
+      description: Points to the related content item.
+  responses:
+    InvalidRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StatusMessage'
+    UnprocessableEntity:
+      description: Unprocessable entity
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StatusMessage'
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StatusMessage'
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StatusMessage'
+    NotFound:
+      description: Object not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StatusMessage'
+    Unauthorized:
+      description: Unauthorized action
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StatusMessage'
+  examples:
+    MoveRequestExample:
+      summary: Move request example
+      value:
+        application/json:
+          $ref: example/content-api-query-request-example.json
+    QueryRequestExample:
+      summary: Query request example
+      value:
+        application/json:
+          $ref: example/content-api-query-request-example.json
+    QueryResponseExample:
+      summary: Query response example
+      value:
+        application/json:
+          $ref: example/content-api-query-response-example.json
+    RemoveRequestExample:
+      summary: Remove request example
+      value:
+        application/json:
+          $ref: example/content-api-remove-request-example.json
+    RevertRequestExample:
+      summary: Revert request example
+      value:
+        application/json:
+          $ref: example/content-api-revert-request-example.json
+    SaveRequestExample:
+      summary: Save request example
+      value:
+        application/json:
+          $ref: example/content-api-save-request-example.json
+    SaveResponseExample:
+      summary: Save response example
+      value:
+        application/json:
+          $ref: example/content-api-save-response-example.json
+    DuplicateRequestExample:
+      summary: Duplicate request example
+      value:
+        application/json:
+          $ref: example/content-api-duplicate-request-example.json
+    DuplicateResponseExample:
+      summary: Duplicate response example
+      value:
+        application/json:
+          $ref: example/content-api-duplicate-response-example.json
+    SearchRequestExample:
+      summary: Search request example
+      value:
+        application/json:
+          $ref: example/content-api-search-request-example.json
+    UploadResponseExample:
+      summary: Upload response example
+      value:
+        application/json:
+          $ref: example/content-api-upload-response-example.json
+    RepositoriesExample:
+      value:
+        application/json:
+          $ref: example/repositories.json
+    CreateRetentionPolicyExample:
+      summary: Retention Policy create request payload.
+      value:
+        application/json:
+          $ref: example/content-api-retention-policy-create-example.json
+    RetentionPolicyExample:
+      summary: Retention Policy example
+      value:
+        application/json:
+          $ref: example/content-api-retention-policy-example.json
+    RetentionPoliciesExample:
+      summary: Retention policies response example.
+      value:
+        application/json:
+          $ref: example/content-api-retention-policies-example.json
